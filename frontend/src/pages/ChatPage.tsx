@@ -346,32 +346,38 @@ export function ChatPage() {
 
         <div className="chat-composer">
           <div className="chat-composer-toolbar">
-            <Select
-              size="small"
-              variant="borderless"
-              placeholder={t('chat.kbPlaceholder')}
-              value={resolvedKbId}
-              options={kbOptions}
-              popupMatchSelectWidth={false}
-              style={{ minWidth: 120, maxWidth: 220 }}
-              onChange={(value) => {
-                setKbId(value)
-                resetThread()
-              }}
-            />
-            <Select
-              size="small"
-              variant="borderless"
-              placeholder={t('chat.pipelinePlaceholder')}
-              value={resolvedPipelineId}
-              options={pipelineOptions}
-              popupMatchSelectWidth={false}
-              style={{ minWidth: 140, maxWidth: 260 }}
-              onChange={(value) => {
-                setPipelineId(value)
-                resetThread()
-              }}
-            />
+            <label className="chat-composer-field">
+              <span className="chat-composer-field-label">{t('chat.kbPlaceholder')}</span>
+              <Select
+                size="small"
+                variant="borderless"
+                placeholder={t('chat.kbPlaceholder')}
+                value={resolvedKbId}
+                options={kbOptions}
+                popupMatchSelectWidth={false}
+                style={{ minWidth: 120, maxWidth: 220 }}
+                onChange={(value) => {
+                  setKbId(value)
+                  resetThread()
+                }}
+              />
+            </label>
+            <label className="chat-composer-field">
+              <span className="chat-composer-field-label">{t('chat.pipelinePlaceholder')}</span>
+              <Select
+                size="small"
+                variant="borderless"
+                placeholder={t('chat.pipelinePlaceholder')}
+                value={resolvedPipelineId}
+                options={pipelineOptions}
+                popupMatchSelectWidth={false}
+                style={{ minWidth: 140, maxWidth: 260 }}
+                onChange={(value) => {
+                  setPipelineId(value)
+                  resetThread()
+                }}
+              />
+            </label>
           </div>
           <textarea
             className="chat-composer-input"
