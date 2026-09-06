@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Table, Typography } from 'antd'
+import { Button, Popconfirm, Space, Table, Tag, Typography } from 'antd'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useNavigate } from 'react-router-dom'
@@ -55,7 +55,18 @@ export function ExperimentsPage() {
           },
           {
             title: t('experiments.metrics'),
-            render: (_, row) => row.metric_plugins.join(', ') || t('common.none'),
+            render: (_, row) =>
+              row.metric_plugins.length > 0 ? (
+                <Space size={[4, 4]} wrap>
+                  {row.metric_plugins.map((metric) => (
+                    <Tag key={metric} style={{ marginInlineEnd: 0 }}>
+                      {metric}
+                    </Tag>
+                  ))}
+                </Space>
+              ) : (
+                t('common.none')
+              ),
           },
           {
             title: t('experiments.runCount'),

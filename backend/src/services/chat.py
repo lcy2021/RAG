@@ -15,7 +15,7 @@ from configs.settings import Settings
 from engine.citations import citation_spans, normalize_sources
 from engine.runner import default_collection_id, ordered_calls, run_pipeline
 from infra.models import LiteLLMClient
-from models.enums import PipelineKind
+from models.enums import PipelineKind, PipelineStage
 from models.schemas import (
     ChatMessageIn,
     ChatMessageOut,
@@ -34,6 +34,7 @@ from repositories.knowledge_bases import KnowledgeBaseRepository
 from repositories.pipelines import PipelineRepository
 from repositories.settings import SettingsRepository
 from services.bindings import BindingResolver
+from services.knowledge_bases import first_slot_binding_id
 
 _STREAM_SENTINEL = object()
 
@@ -238,7 +239,10 @@ class ChatService:
             models=LiteLLMClient(),
             trace=MemoryTrace(),
             default_embedder_binding_id=kb.get("default_embedder_binding_id"),
-            default_generator_binding_id=kb.get("default_generator_binding_id"),
+            default_generator_binding_id=(
+                kb.get("default_generator_binding_id")
+                or first_slot_binding_id(pipeline, PipelineStage.GENERATOR)
+            ),
         )
         if on_token is not None:
             ctx.extra["on_token"] = on_token

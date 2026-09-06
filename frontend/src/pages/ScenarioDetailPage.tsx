@@ -4,6 +4,7 @@ import {
   Checkbox,
   Form,
   Input,
+  InputNumber,
   Popconfirm,
   Select,
   Space,
@@ -11,7 +12,7 @@ import {
   Typography,
   Upload,
 } from 'antd'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -23,7 +24,9 @@ import {
   useDocuments,
   useImportScenarioItems,
   useKnowledgeBases,
+  usePlugins,
   useScenario,
+  useUpdateScenario,
 } from '../api/hooks'
 import type { EvalItem } from '../api/types'
 import { FormPageHeader } from '../components/FormPageHeader'
@@ -33,6 +36,14 @@ import {
   downloadScenarioJsonTemplate,
 } from '../lib/scenarioImport'
 
+type SettingsFormValues = {
+  name: string
+  metric_plugins: string[]
+  notes?: string
+  latency_p95_ms_max?: number | null
+  cost_micros_max?: number | null
+}
+
 export function ScenarioDetailPage() {
   const { t } = useTranslation()
   const message = useMessage()
@@ -40,21 +51,43 @@ export function ScenarioDetailPage() {
   const { id } = useParams<{ id: string }>()
   const scenario = useScenario(id ?? null)
   const kbs = useKnowledgeBases()
+  const plugins = usePlugins()
   const documents = useDocuments(scenario.data?.knowledge_base_id ?? null)
+  const updateScenario = useUpdateScenario()
   const createItem = useCreateEvalItem(id ?? '')
   const importItems = useImportScenarioItems(id ?? '')
   const deleteItem = useDeleteEvalItem(id ?? '')
   const createSpan = useCreateEvalSpan(id ?? '')
   const deleteSpan = useDeleteEvalSpan(id ?? '')
+  const [settingsForm] = Form.useForm<SettingsFormValues>()
   const [itemForm] = Form.useForm<{ question: string; expected?: string }>()
   const [replaceOnImport, setReplaceOnImport] = useState(false)
+  const [settingsHydratedId, setSettingsHydratedId] = useState<string | null>(null)
   const [spanForms, setSpanForms] = useState<Record<string, { document_id?: string; quote?: string }>>(
     {},
   )
 
+  const evaluators = useMemo(
+    () => (plugins.data ?? []).filter((item) => item.stage === 'evaluator'),
+    [plugins.data],
+  )
   const kbName =
     (kbs.data ?? []).find((row) => row.id === scenario.data?.knowledge_base_id)?.name ??
     scenario.data?.knowledge_base_id
+
+  useEffect(() => {
+    if (!scenario.data || settingsHydratedId === scenario.data.id) {
+      return
+    }
+    settingsForm.setFieldsValue({
+      name: scenario.data.name,
+      metric_plugins: scenario.data.metric_plugins,
+      notes: scenario.data.notes ?? undefined,
+      latency_p95_ms_max: scenario.data.latency_p95_ms_max,
+      cost_micros_max: scenario.data.cost_micros_max,
+    })
+    setSettingsHydratedId(scenario.data.id)
+  }, [scenario.data, settingsForm, settingsHydratedId])
 
   if (scenario.isLoading) {
     return (
@@ -82,23 +115,73 @@ export function ScenarioDetailPage() {
   return (
     <>
       <FormPageHeader title={detail.name} backTo="/scenarios" />
-      <Card style={{ marginBottom: 16 }}>
-        <Typography.Paragraph type="secondary">
-          {detail.notes || t('common.noDescription')}
-        </Typography.Paragraph>
-        <Space wrap size="large">
-          <Typography.Text>
-            {t('scenarios.knowledgeBase')}: {kbName}
-          </Typography.Text>
-          <Typography.Text>
-            {t('scenarios.metrics')}: {detail.metric_plugins.join(', ')}
-          </Typography.Text>
-          {detail.latency_p95_ms_max != null ? (
-            <Typography.Text>
-              {t('scenarios.latencySlo')}: {detail.latency_p95_ms_max}ms
-            </Typography.Text>
-          ) : null}
-        </Space>
+      <Card title={t('scenarios.settingsTitle')} style={{ marginBottom: 16 }}>
+        <Form
+          form={settingsForm}
+          layout="vertical"
+          style={{ maxWidth: 640 }}
+          onFinish={async (values) => {
+            try {
+              const weights: Record<string, number> = {}
+              for (const name of values.metric_plugins) {
+                weights[name] = detail.metric_weights?.[name] ?? 1
+              }
+              await updateScenario.mutateAsync({
+                id: detail.id,
+                body: {
+                  name: values.name,
+                  metric_plugins: values.metric_plugins,
+                  metric_weights: weights,
+                  latency_p95_ms_max: values.latency_p95_ms_max ?? null,
+                  cost_micros_max: values.cost_micros_max ?? null,
+                  notes: values.notes || null,
+                },
+              })
+              message.success(t('scenarios.updated'))
+            } catch (error) {
+              message.error(error instanceof Error ? error.message : t('common.saveFailed'))
+            }
+          }}
+        >
+          <Form.Item name="name" label={t('common.name')} rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item
+            label={t('scenarios.knowledgeBase')}
+            extra={t('scenarios.kbImmutableHint')}
+          >
+            <Select
+              disabled
+              value={detail.knowledge_base_id}
+              options={[{ value: detail.knowledge_base_id, label: kbName }]}
+            />
+          </Form.Item>
+          <Form.Item
+            name="metric_plugins"
+            label={t('scenarios.metrics')}
+            rules={[{ required: true, message: t('scenarios.metricsRequired') }]}
+          >
+            <Select
+              mode="multiple"
+              options={evaluators.map((item) => ({
+                value: item.name,
+                label: `${item.name}${item.description ? ` — ${item.description}` : ''}`,
+              }))}
+            />
+          </Form.Item>
+          <Form.Item name="latency_p95_ms_max" label={t('scenarios.latencySlo')}>
+            <InputNumber min={1} style={{ width: '100%' }} placeholder={t('common.optional')} />
+          </Form.Item>
+          <Form.Item name="cost_micros_max" label={t('scenarios.costSlo')}>
+            <InputNumber min={1} style={{ width: '100%' }} placeholder={t('common.optional')} />
+          </Form.Item>
+          <Form.Item name="notes" label={t('scenarios.notes')}>
+            <Input.TextArea rows={3} placeholder={t('common.optional')} />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={updateScenario.isPending}>
+            {t('common.save')}
+          </Button>
+        </Form>
       </Card>
 
       <Card title={t('scenarios.itemsTitle')} style={{ marginBottom: 16 }}>

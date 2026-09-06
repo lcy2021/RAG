@@ -26,7 +26,7 @@ from services.bindings import BindingResolver
 logger = logging.getLogger(__name__)
 
 
-def _first_slot_binding_id(pipeline: dict, stage: PipelineStage) -> UUID | None:
+def first_slot_binding_id(pipeline: dict, stage: PipelineStage) -> UUID | None:
     """Read binding_id from the first binding of a pipeline stage slot."""
     for slot in pipeline.get("slots") or []:
         slot_stage = slot.get("stage")
@@ -40,6 +40,10 @@ def _first_slot_binding_id(pipeline: dict, stage: PipelineStage) -> UUID | None:
         if raw:
             return UUID(str(raw))
     return None
+
+
+# Backward-compatible alias for older call sites / tests.
+_first_slot_binding_id = first_slot_binding_id
 
 
 class KnowledgeBaseService:

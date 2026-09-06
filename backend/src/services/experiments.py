@@ -38,6 +38,7 @@ from repositories.pipelines import PipelineRepository
 from repositories.scenarios import ScenarioRepository
 from repositories.settings import SettingsRepository
 from services.bindings import BindingResolver
+from services.knowledge_bases import first_slot_binding_id
 
 
 class ExperimentService:
@@ -220,6 +221,23 @@ class ExperimentService:
             )
 
         metrics = list(experiment.get("metric_plugins") or scenario_detail["metric_plugins"])
+        if "faithfulness" in metrics:
+            has_judge = bool(experiment.get("judge_binding_id") or kb.get("default_generator_binding_id"))
+            if not has_judge:
+                for variant in spec["variants"]:
+                    pipeline_id = variant.get("query_pipeline_id") or spec["query_pipeline_id"]
+                    pipeline = await self._pipelines.get(pipeline_id)
+                    if pipeline and first_slot_binding_id(pipeline, PipelineStage.GENERATOR):
+                        has_judge = True
+                        break
+            if not has_judge:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "faithfulness requires an LLM credential: set judge_binding_id "
+                        "on the experiment, or binding_id on a query pipeline generator"
+                    ),
+                )
         weights = dict(scenario_detail.get("metric_weights") or {})
         for name in metrics:
             weights.setdefault(name, 1.0)
@@ -382,6 +400,7 @@ class ExperimentService:
                     default_generator_binding_id=(
                         experiment.get("judge_binding_id")
                         or kb.get("default_generator_binding_id")
+                        or first_slot_binding_id(pipeline, PipelineStage.GENERATOR)
                     ),
                 )
                 started = time.perf_counter()
@@ -854,8 +873,14 @@ class ExperimentService:
             if plugin is None:
                 raise HTTPException(status_code=400, detail=f"unknown evaluator plugin: {name}")
             params: dict[str, Any] = {}
-            if name == "faithfulness" and judge_binding_id is not None:
-                params["binding_id"] = str(judge_binding_id)
+            if name == "faithfulness":
+                binding = judge_binding_id or ctx.default_generator_binding_id
+                if binding is None:
+                    raise ValueError(
+                        "faithfulness requires an LLM credential: set judge_binding_id "
+                        "on the experiment, or binding_id on the query pipeline generator"
+                    )
+                params["binding_id"] = str(binding)
             data = await plugin.execute(data, params, ctx)
             value = (data.get("metrics") or {}).get(name)
             out[name] = float(value) if value is not None else None

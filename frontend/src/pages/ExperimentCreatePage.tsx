@@ -3,7 +3,12 @@ import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 
-import { useCreateExperiment, usePipelines, useScenarios } from '../api/hooks'
+import {
+  useCreateExperiment,
+  useCredentials,
+  usePipelines,
+  useScenarios,
+} from '../api/hooks'
 import { FormPageHeader } from '../components/FormPageHeader'
 import { useMessage } from '../hooks/useMessage'
 
@@ -11,6 +16,7 @@ type FormValues = {
   name: string
   scenario_id: string
   query_pipeline_ids: string[]
+  judge_binding_id?: string
   notes?: string
 }
 
@@ -21,7 +27,9 @@ export function ExperimentCreatePage() {
   const [form] = Form.useForm<FormValues>()
   const scenarios = useScenarios()
   const pipelines = usePipelines()
+  const credentials = useCredentials()
   const create = useCreateExperiment()
+  const scenarioId = Form.useWatch('scenario_id', form)
   const queryPipelines = useMemo(
     () => (pipelines.data ?? []).filter((item) => item.kind === 'query'),
     [pipelines.data],
@@ -29,6 +37,15 @@ export function ExperimentCreatePage() {
   const pipelineById = useMemo(
     () => new Map(queryPipelines.map((item) => [item.id, item])),
     [queryPipelines],
+  )
+  const selectedScenario = useMemo(
+    () => (scenarios.data ?? []).find((item) => item.id === scenarioId),
+    [scenarioId, scenarios.data],
+  )
+  const needsJudge = Boolean(selectedScenario?.metric_plugins?.includes('faithfulness'))
+  const llmCredentials = useMemo(
+    () => (credentials.data ?? []).filter((item) => item.kind === 'llm'),
+    [credentials.data],
   )
 
   return (
@@ -69,6 +86,7 @@ export function ExperimentCreatePage() {
                 scenario_id: values.scenario_id,
                 query_pipeline_id: pipelineIds[0],
                 variants,
+                judge_binding_id: values.judge_binding_id || null,
                 notes: values.notes || null,
               })
               message.success(t('experiments.created'))
@@ -118,6 +136,23 @@ export function ExperimentCreatePage() {
               }))}
             />
           </Form.Item>
+          {needsJudge ? (
+            <Form.Item
+              name="judge_binding_id"
+              label={t('experiments.judgeBinding')}
+              extra={t('experiments.judgeBindingHint')}
+              rules={[{ required: true, message: t('experiments.judgeBindingRequired') }]}
+            >
+              <Select
+                allowClear
+                placeholder={t('experiments.judgeBindingPlaceholder')}
+                options={llmCredentials.map((item) => ({
+                  value: item.id,
+                  label: `${item.name} (${item.model_name})`,
+                }))}
+              />
+            </Form.Item>
+          ) : null}
           <Form.Item name="notes" label={t('experiments.notes')}>
             <Input.TextArea rows={2} />
           </Form.Item>

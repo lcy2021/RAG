@@ -1,8 +1,15 @@
 import { Button, Card, Popconfirm, Space, Table, Typography, Upload } from 'antd'
+import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate, useParams } from 'react-router-dom'
 
-import { useDeleteDocument, useDocuments, useKnowledgeBases, useUploadDocument } from '../api/hooks'
+import {
+  useDeleteDocument,
+  useDocuments,
+  useKnowledgeBases,
+  usePipelines,
+  useUploadDocument,
+} from '../api/hooks'
 import { FormPageHeader } from '../components/FormPageHeader'
 import { UPLOAD_ACCEPT } from '../constants'
 import { useMessage } from '../hooks/useMessage'
@@ -13,10 +20,18 @@ export function KnowledgeBaseDetailPage() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const kbs = useKnowledgeBases()
+  const pipelines = usePipelines()
   const kb = (kbs.data ?? []).find((item) => item.id === id) ?? null
   const documents = useDocuments(id ?? null)
   const upload = useUploadDocument(id ?? '')
   const remove = useDeleteDocument(id ?? '')
+  const ingestPipelineName = useMemo(() => {
+    if (!kb?.ingest_pipeline_id) {
+      return t('common.unbound')
+    }
+    const pipeline = (pipelines.data ?? []).find((item) => item.id === kb.ingest_pipeline_id)
+    return pipeline?.name ?? kb.ingest_pipeline_id
+  }, [kb?.ingest_pipeline_id, pipelines.data, t])
 
   if (kbs.isLoading) {
     return (
@@ -48,7 +63,7 @@ export function KnowledgeBaseDetailPage() {
         </Typography.Paragraph>
         <Space wrap>
           <Typography.Text>
-            {t('kb.ingestPipelineLabel', { id: kb.ingest_pipeline_id ?? t('common.unbound') })}
+            {t('kb.ingestPipelineLabel', { name: ingestPipelineName })}
           </Typography.Text>
         </Space>
         <div style={{ margin: '16px 0' }}>

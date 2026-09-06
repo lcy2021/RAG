@@ -58,6 +58,26 @@ export function ExperimentDetailPage() {
     return map
   }, [runDetail.data])
 
+  const variantPipelineIds = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const item of runDetail.data?.variants ?? []) {
+      if (item.query_pipeline_id) {
+        map.set(item.id, item.query_pipeline_id)
+      }
+    }
+    if (map.size === 0) {
+      const snapshot = runDetail.data?.snapshot as
+        | { variants?: Array<{ id: string; query_pipeline_id?: string | null }> }
+        | undefined
+      for (const item of snapshot?.variants ?? []) {
+        if (item.query_pipeline_id) {
+          map.set(item.id, item.query_pipeline_id)
+        }
+      }
+    }
+    return map
+  }, [runDetail.data])
+
   if (experiment.isLoading) {
     return (
       <>
@@ -107,9 +127,18 @@ export function ExperimentDetailPage() {
               {detail.scenario_name || detail.scenario_id.slice(0, 8)}
             </Link>
           </Typography.Text>
-          <Typography.Text>
-            {t('experiments.metrics')}: {detail.metric_plugins.join(', ')}
-          </Typography.Text>
+          <Space size={6} wrap align="center">
+            <Typography.Text type="secondary">{t('experiments.metrics')}</Typography.Text>
+            {detail.metric_plugins.length > 0 ? (
+              detail.metric_plugins.map((metric) => (
+                <Tag key={metric} style={{ marginInlineEnd: 0 }}>
+                  {metric}
+                </Tag>
+              ))
+            ) : (
+              <Typography.Text type="secondary">{t('common.none')}</Typography.Text>
+            )}
+          </Space>
         </Space>
         <div style={{ marginTop: 16 }}>
           <Space wrap>
@@ -254,8 +283,14 @@ export function ExperimentDetailPage() {
               columns={[
                 {
                   title: t('experiments.variant'),
-                  render: (_: unknown, row: EvalVariantProgress) =>
-                    row.query_pipeline_name || row.label,
+                  render: (_: unknown, row: EvalVariantProgress) => {
+                    const name = row.query_pipeline_name || row.label
+                    return row.query_pipeline_id ? (
+                      <Link to={`/pipelines/${row.query_pipeline_id}/edit`}>{name}</Link>
+                    ) : (
+                      name
+                    )
+                  },
                 },
                 {
                   title: t('common.status'),
@@ -310,15 +345,22 @@ export function ExperimentDetailPage() {
               },
               {
                 title: t('experiments.variant'),
-                render: (_, row: EvalSummary) => (
-                  <Space>
-                    <span>
-                      {variantLabels.get(row.compare_variant_id) ??
-                        row.compare_variant_id.slice(0, 8)}
-                    </span>
-                    {row.is_winner ? <Tag color="success">{t('experiments.winner')}</Tag> : null}
-                  </Space>
-                ),
+                render: (_, row: EvalSummary) => {
+                  const name =
+                    variantLabels.get(row.compare_variant_id) ??
+                    row.compare_variant_id.slice(0, 8)
+                  const pipelineId = variantPipelineIds.get(row.compare_variant_id)
+                  return (
+                    <Space>
+                      {pipelineId ? (
+                        <Link to={`/pipelines/${pipelineId}/edit`}>{name}</Link>
+                      ) : (
+                        <span>{name}</span>
+                      )}
+                      {row.is_winner ? <Tag color="success">{t('experiments.winner')}</Tag> : null}
+                    </Space>
+                  )
+                },
               },
               {
                 title: t('experiments.composite'),
