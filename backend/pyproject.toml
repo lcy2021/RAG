@@ -1,0 +1,93 @@
+[project]
+name = "raglab"
+version = "0.1.0"
+description = "Plugin-based RAG laboratory API"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "sqlalchemy[asyncio]>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "pgvector>=0.3.6",
+    "psycopg[binary]>=3.2.0",
+    "httpx>=0.27.0",
+    "litellm>=1.60.0",
+    "python-multipart>=0.0.18",
+    "pyyaml>=6.0.2",
+    "pypdf>=5.1.0",
+    "python-docx>=1.1.2",
+    "openpyxl>=3.1.5",
+    "python-pptx>=1.0.2",
+    "beautifulsoup4>=4.12.3",
+]
+
+[project.optional-dependencies]
+ocr = [
+    "pytesseract>=0.3.10",
+    "Pillow>=10.0.0",
+    "pdf2image>=1.17.0",
+]
+dev = [
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.27.0",
+    "ruff>=0.8.0",
+]
+
+[project.scripts]
+raglab = "main:run"
+raglab-migrate = "db.migrate:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "src/api",
+    "src/configs",
+    "src/db",
+    "src/engine",
+    "src/infra",
+    "src/models",
+    "src/plugins",
+    "src/repositories",
+    "src/services",
+    "src/workers",
+]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/main.py" = "main.py"
+"src/alembic" = "alembic"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.isort]
+known-first-party = [
+    "api",
+    "configs",
+    "db",
+    "engine",
+    "infra",
+    "main",
+    "models",
+    "plugins",
+    "repositories",
+    "services",
+    "workers",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+pythonpath = ["src"]

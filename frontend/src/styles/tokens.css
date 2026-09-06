@@ -1,0 +1,31 @@
+:root {
+  color-scheme: dark;
+
+  --rl-canvas: #010102;
+  --rl-sidebar: #0f1011;
+  --rl-surface: #141516;
+  --rl-elevated: #18191a;
+  --rl-hover: #1c1d1f;
+  --rl-active: #222326;
+
+  --rl-border: #23252a;
+  --rl-border-strong: #34343a;
+
+  --rl-text: #f7f8f8;
+  --rl-text-muted: #8a8f98;
+  --rl-text-faint: #62666d;
+
+  --rl-accent: #5e6ad2;
+  --rl-accent-hover: #828fff;
+  --rl-accent-soft: rgba(94, 106, 210, 0.14);
+  --rl-accent-ring: rgba(94, 106, 210, 0.28);
+
+  --rl-success: #3dd68c;
+  --rl-warning: #f5a524;
+  --rl-danger: #f76166;
+
+  --rl-radius: 8px;
+  --rl-radius-lg: 12px;
+  --rl-font: 'DM Sans', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --rl-mono: 'DM Mono', ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
