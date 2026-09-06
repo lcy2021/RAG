@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 
 import { useHealth } from '../api/hooks'
+import brandMark from '../assets/rag-lab-brand.png'
 import { NAV_ITEMS } from '../constants'
 import { LanguageSwitch } from './LanguageSwitch'
 import './AppLayout.css'
@@ -60,7 +61,7 @@ export function AppLayout() {
         theme="dark"
       >
         <div className="app-brand">
-          <span className="app-brand-mark" aria-hidden />
+          <img className="app-brand-mark" src={brandMark} alt="" aria-hidden />
           <span className="app-brand-text">{t('layout.brand')}</span>
         </div>
         <Menu

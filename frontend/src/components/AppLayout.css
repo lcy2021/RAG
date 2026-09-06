@@ -33,11 +33,12 @@
 }
 
 .app-brand-mark {
-  width: 18px;
-  height: 18px;
-  border-radius: 5px;
-  background: linear-gradient(145deg, var(--rl-accent-hover) 0%, var(--rl-accent) 100%);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 6px 16px rgba(94, 106, 210, 0.28);
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+  background: #f4f6f5;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
 }
 
