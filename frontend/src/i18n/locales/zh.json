@@ -1,6 +1,6 @@
 {
   "nav": {
-    "settings": "设置",
+    "credentials": "凭证",
     "plugins": "插件",
     "pipelines": "流水线",
     "kb": "知识库",
@@ -53,25 +53,27 @@
     "generator": "生成",
     "evaluator": "评测"
   },
-  "settings": {
-    "title": "设置",
-    "subtitle": "登记向量或 LLM 凭证：密钥入库后列表只显示 key_hint。流水线插件用 binding_id 引用凭证，不要把 api_key 写进参数。专用 rerank 模型不设单独凭证类型，请自行开发插件接入。",
-    "credentials": "凭证",
+  "credentials": {
+    "title": "凭证",
+    "subtitle": "登记向量或 LLM 凭证。",
     "kind": "类型",
     "kind_vector": "向量",
     "kind_llm": "LLM",
     "secret": "密钥",
+    "secretKeepHint": "留空则保留原密钥",
+    "secretPlaceholder": "当前 {{hint}}，留空不改",
     "keyHint": "密钥提示",
-    "deleteCredential": "删除该凭证？",
-    "credentialSaved": "已保存（列表不会回传明文密钥）",
+    "deleteConfirm": "删除该凭证？",
+    "saved": "已保存（列表不会回传明文密钥）",
     "model": "模型",
     "baseUrl": "Base URL",
     "dim": "向量维度",
-    "addCredential": "新增凭证"
+    "add": "新增凭证",
+    "edit": "编辑凭证"
   },
   "plugins": {
     "title": "插件中心",
-    "subtitle": "内置目录来自服务端注册表。bge-reranker 为 LLM 占位；真 Cross-Encoder（如 BAAI/bge-reranker-v2-m3）请按自定义插件自行开发。自定义 .py 上传属于 M5，当前仅浏览。",
+    "subtitle": "目录来自服务端注册表。新增插件请直接改 backend/src/plugins/custom/（或 builtin），重启后生效；本页只浏览。bge-reranker 为 LLM 占位，真 Cross-Encoder 请自行加插件。",
     "stage": "阶段",
     "version": "版本",
     "source": "来源",
@@ -79,7 +81,7 @@
   },
   "pipelines": {
     "title": "流水线",
-    "subtitle": "列表查看已保存的流水线；点新增或编辑按阶段选择插件。查询流水线检索槽可选「混合」：dense + bm25，再经 rrf 融合。重排槽内置为 LLM 占位；真 rerank 模型请自行开发插件。",
+    "subtitle": "配置入库与查询流水线。",
     "createTitle": "新建流水线",
     "editTitle": "编辑流水线",
     "notFound": "未找到该流水线",

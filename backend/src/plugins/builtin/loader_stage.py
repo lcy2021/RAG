@@ -1,8 +1,7 @@
 ﻿"""Ingest loaders: auto router plus specialized strategies for A/B tests.
 
 Pipeline default is ``auto``. Catalog also registers ``text`` / ``markup`` /
-``layout`` / ``table`` / ``ocr`` so labs can pin one strategy. ``text_file``
-remains as an alias of ``auto`` for older pipeline recipes.
+``layout`` / ``table`` / ``ocr`` so labs can pin one strategy.
 """
 
 from __future__ import annotations
@@ -68,7 +67,7 @@ def _make_loader(
     @plugin.run
     async def run_loader(data, params, ctx):
         merge_tables = bool(params.get("merge_tables", True))
-        ocr_lang = str(params.get("ocr_lang") or "chi_sim+eng")
+        ocr_lang = str(params["ocr_lang"]) if params.get("ocr_lang") is not None else "chi_sim+eng"
         result = load_from_ingest_data(
             data,
             force_strategy=force_strategy,
@@ -126,10 +125,4 @@ ocr = _make_loader(
     default_params={"ocr_lang": "chi_sim+eng"},
 )
 
-text_file = _make_loader(
-    name="text_file",
-    description="兼容别名：行为与 auto 相同。新流水线请选 auto。",
-    force_strategy=None,
-)
-
-LOADER_PLUGINS = [auto, text, markup, layout, table, ocr, text_file]
+LOADER_PLUGINS = [auto, text, markup, layout, table, ocr]

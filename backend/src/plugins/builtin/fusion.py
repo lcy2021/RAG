@@ -1,5 +1,6 @@
 ﻿from engine.retrieval import reciprocal_rank_fusion
 from plugins.define import define_stage
+from plugins.params import param_int
 
 rrf = define_stage(
     stage="fusion",
@@ -24,7 +25,7 @@ async def run_rrf(data, params, ctx):
     if len(ranked) == 1:
         data["retrieved"] = ranked[0]
         return data
-    fused = reciprocal_rank_fusion(ranked, k=int(params.get("k") or 60))
+    fused = reciprocal_rank_fusion(ranked, k=param_int(params, "k", 60))
     data["retrieved"] = fused
     return data
 

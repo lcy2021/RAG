@@ -320,31 +320,32 @@ export function ChatPage() {
         </div>
       </aside>
 
-      <div className="chat-shell">
-        <div className="chat-transcript" ref={listRef}>
-          {showEmpty ? (
-            <div className="chat-empty">
-              <Typography.Title level={3} style={{ marginBottom: 8 }}>
-                {t('chat.askTitle')}
-              </Typography.Title>
-              <Typography.Text type="secondary">{t('chat.askHint')}</Typography.Text>
-            </div>
-          ) : (
-            transcript.map((item) => (
-              <ChatBubble
-                key={item.id}
-                message={item}
-                conversationId={conversationId}
-                streaming={item.id === '__streaming_assistant__'}
-                progress={item.id === '__streaming_assistant__' ? progressLog : undefined}
-                traces={item.rag_run_id ? tracesByRun[item.rag_run_id] : undefined}
-                cachedSources={item.rag_run_id ? sourcesByRun[item.rag_run_id] : undefined}
-              />
-            ))
-          )}
-        </div>
+      <div className="chat-main-pane">
+        <div className="chat-shell">
+          <div className="chat-transcript" ref={listRef}>
+            {showEmpty ? (
+              <div className="chat-empty">
+                <Typography.Title level={3} style={{ marginBottom: 8 }}>
+                  {t('chat.askTitle')}
+                </Typography.Title>
+                <Typography.Text type="secondary">{t('chat.askHint')}</Typography.Text>
+              </div>
+            ) : (
+              transcript.map((item) => (
+                <ChatBubble
+                  key={item.id}
+                  message={item}
+                  conversationId={conversationId}
+                  streaming={item.id === '__streaming_assistant__'}
+                  progress={item.id === '__streaming_assistant__' ? progressLog : undefined}
+                  traces={item.rag_run_id ? tracesByRun[item.rag_run_id] : undefined}
+                  cachedSources={item.rag_run_id ? sourcesByRun[item.rag_run_id] : undefined}
+                />
+              ))
+            )}
+          </div>
 
-        <div className="chat-composer">
+          <div className="chat-composer">
           <div className="chat-composer-toolbar">
             <label className="chat-composer-field">
               <span className="chat-composer-field-label">{t('chat.kbPlaceholder')}</span>
@@ -401,6 +402,7 @@ export function ChatPage() {
               {t('common.send')}
             </Button>
           </div>
+        </div>
         </div>
       </div>
     </div>

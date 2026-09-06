@@ -7,6 +7,7 @@ import type {
   Conversation,
   Credential,
   CredentialCreate,
+  CredentialUpdate,
   Document,
   EvalItem,
   EvalItemCreate,
@@ -78,10 +79,27 @@ export function useCredentials() {
   })
 }
 
+export function useCredential(id: string | null) {
+  return useQuery({
+    queryKey: [...queryKeys.credentials, id],
+    queryFn: () => apiGet<Credential>(`/settings/credentials/${id}`),
+    enabled: Boolean(id),
+  })
+}
+
 export function useCreateCredential() {
   const client = useQueryClient()
   return useMutation({
     mutationFn: (body: CredentialCreate) => apiPost<Credential>('/settings/credentials', body),
+    onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.credentials }),
+  })
+}
+
+export function useUpdateCredential() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: string; body: CredentialUpdate }) =>
+      apiPut<Credential>(`/settings/credentials/${id}`, body),
     onSuccess: () => client.invalidateQueries({ queryKey: queryKeys.credentials }),
   })
 }

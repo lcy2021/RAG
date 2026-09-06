@@ -1,4 +1,5 @@
 ﻿from plugins.define import define_stage
+from plugins.params import param_float, param_int
 
 chat = define_stage(
     stage="generator",
@@ -47,8 +48,8 @@ async def run_chat(data, params, ctx):
             "content": f"Question:\n{query}\n\nPassages:\n{context}",
         }
     )
-    temperature = float(params.get("temperature") or 0.2)
-    max_tokens = int(params.get("max_tokens") or 1024)
+    temperature = param_float(params, "temperature", 0.2)
+    max_tokens = param_int(params, "max_tokens", 1024)
     binding_id = params.get("binding_id")
     on_token = ctx.token_callback()
     if on_token is None:

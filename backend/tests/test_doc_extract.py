@@ -13,7 +13,7 @@ from engine.doc_extract import (
     extract_path,
     load_from_ingest_data,
 )
-from plugins.builtin.loader_stage import auto, table, text, text_file
+from plugins.builtin.loader_stage import auto, table, text
 
 
 def test_detect_kind_from_extension_and_mime() -> None:
@@ -121,13 +121,6 @@ async def test_auto_and_specialized_loaders(tmp_path: Path) -> None:
     assert result["raw_text"] == "alpha"
     assert result["loader_kind"] == "text"
     assert result["loader_strategy"] == "text"
-
-    alias = await text_file.execute(
-        {"file_path": str(path), "filename": path.name, "raw_text": ""},
-        {},
-        None,
-    )
-    assert alias["raw_text"] == "alpha"
 
     html = tmp_path / "x.html"
     html.write_text("<p>Hi</p>", encoding="utf-8")

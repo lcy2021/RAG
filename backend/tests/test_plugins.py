@@ -17,10 +17,8 @@ def test_list_builtin_plugins(client) -> None:
     assert ("loader", "layout") in names
     assert ("loader", "table") in names
     assert ("loader", "ocr") in names
-    assert ("loader", "text_file") in names
-    loader_names = [item["name"] for item in response.json() if item["stage"] == "loader"]
-    assert loader_names == ["auto", "layout", "markup", "ocr", "table", "text", "text_file"] or set(
-        loader_names
-    ) == {"auto", "layout", "markup", "ocr", "table", "text", "text_file"}
+    assert ("loader", "text_file") not in names
+    loader_names = {item["name"] for item in response.json() if item["stage"] == "loader"}
+    assert loader_names == {"auto", "layout", "markup", "ocr", "table", "text"}
     missing = [item["name"] for item in response.json() if not item.get("description")]
     assert missing == []

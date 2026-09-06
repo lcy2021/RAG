@@ -22,13 +22,13 @@ services:
       RAGLAB_DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/raglab
       RAGLAB_DATABASE_ENABLED: "true"
       RAGLAB_UPLOAD_DIR: /data/uploads
-      RAGLAB_CUSTOM_PLUGIN_DIR: /data/plugins
+      RAGLAB_CUSTOM_PLUGIN_DIR: /app/src/plugins/custom
       RAGLAB_CORS_ORIGINS: http://localhost:6650,http://127.0.0.1:6650
     ports:
       - "6660:8000"
     volumes:
       - raglab-uploads:/data/uploads
-      - raglab-plugins:/data/plugins
+      - ./backend/src/plugins/custom:/app/src/plugins/custom
     depends_on:
       postgres:
         condition: service_healthy
@@ -57,4 +57,3 @@ services:
 volumes:
   raglab-pg:
   raglab-uploads:
-  raglab-plugins:

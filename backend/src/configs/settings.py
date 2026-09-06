@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/raglab"
     database_enabled: bool = True
     upload_dir: str = "./data/uploads"
-    custom_plugin_dir: str = "./data/plugins"
+    custom_plugin_dir: str = "./src/plugins/custom"
     cors_origins: str = "http://localhost:6650"
     api_prefix: str = "/api/v1"
 

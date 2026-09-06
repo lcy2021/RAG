@@ -1,5 +1,6 @@
 ﻿from engine.retrieval import parse_json_object
 from plugins.define import define_stage
+from plugins.params import param_int
 
 
 def _quotes(data: dict) -> list[str]:
@@ -36,7 +37,7 @@ recall_at_k = define_stage(
 @recall_at_k.run
 async def run_recall(data, params, ctx):
     """Span-level recall: gold quote appears in any of the top-k passages."""
-    k = int(params.get("k") or 10)
+    k = param_int(params, "k", 10)
     quotes = _quotes(data)
     blob = _retrieved_text(data, k)
     if not quotes:

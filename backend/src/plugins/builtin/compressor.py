@@ -1,4 +1,5 @@
 ﻿from plugins.define import define_stage
+from plugins.params import param_int
 
 none_compressor = define_stage(
     stage="compressor",
@@ -30,8 +31,11 @@ top_n = define_stage(
 async def run_top_n(data, params, ctx):
     """Keep the first n passages after rerank to fit the context window."""
     retrieved = list(data.get("retrieved") or [])
-    limit = int(params.get("n") or 5)
-    data["retrieved"] = retrieved[:limit]
+    limit = max(0, param_int(params, "n", 5))
+    clipped = retrieved[:limit]
+    for rank, item in enumerate(clipped, start=1):
+        item["rank"] = rank
+    data["retrieved"] = clipped
     return data
 
 

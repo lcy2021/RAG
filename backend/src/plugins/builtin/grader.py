@@ -1,5 +1,6 @@
 ﻿from engine.retrieval import parse_json_object
 from plugins.define import define_stage
+from plugins.params import param_float, retrieval_query
 
 crag = define_stage(
     stage="grader",
@@ -21,8 +22,8 @@ crag = define_stage(
 async def run_crag(data, params, ctx):
     """Corrective RAG: keep passages only when the grader is confident they help."""
     retrieved = list(data.get("retrieved") or [])
-    threshold = float(params.get("accept_threshold") or 0.5)
-    query = data.get("query") or ""
+    threshold = param_float(params, "accept_threshold", 0.5)
+    query = retrieval_query(data)
     kept: list[dict] = []
     grades: list[float] = []
     for item in retrieved:
@@ -58,7 +59,9 @@ async def run_crag(data, params, ctx):
         data["retrieved"] = []
         data["crag_action"] = "reject"
     else:
-        data["retrieved"] = kept or retrieved
+        for rank, item in enumerate(kept, start=1):
+            item["rank"] = rank
+        data["retrieved"] = kept
         data["crag_action"] = "correct"
     data["crag_max_score"] = max_grade
     return data

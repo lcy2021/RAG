@@ -46,7 +46,7 @@ export const LLM_STAGES = new Set([
 ])
 
 export const NAV_ITEMS = [
-  { key: '/settings' },
+  { key: '/credentials' },
   { key: '/plugins' },
   { key: '/pipelines' },
   { key: '/kb' },

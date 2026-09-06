@@ -215,6 +215,7 @@ class ChatService:
         return {
             "conversation_id": conversation_id,
             "kb": kb,
+            "pipeline": pipeline,
             "user": user,
             "run": run,
             "calls": calls,
@@ -231,6 +232,7 @@ class ChatService:
     ) -> ChatTurnOut:
         conversation_id: UUID = prepared["conversation_id"]
         kb = prepared["kb"]
+        pipeline = prepared["pipeline"]
         user = prepared["user"]
         run = prepared["run"]
         ctx = PluginContext(

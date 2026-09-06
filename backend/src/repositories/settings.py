@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from typing import Any
 from uuid import UUID
 
@@ -67,6 +68,49 @@ class SettingsRepository:
             ),
             exclude=_CREDENTIAL_SECRET,
         )
+
+    async def update_credential(
+        self,
+        credential_id: UUID,
+        *,
+        name: str | None = None,
+        kind: str | None = None,
+        provider: str | None = None,
+        plugin_name: str | None = None,
+        model_name: str | None = None,
+        base_url: str | None = None,
+        encrypted_payload: bytes | None = None,
+        key_hint: str | None = None,
+        extra: dict[str, Any] | None = None,
+        touch_secret: bool = False,
+        set_base_url: bool = False,
+    ) -> dict[str, Any] | None:
+        row = await self._session.get(Credential, credential_id)
+        if row is None:
+            return None
+        if name is not None:
+            row.name = name
+        if kind is not None:
+            row.kind = CredentialKind(kind)
+        if provider is not None:
+            row.provider = provider
+        if plugin_name is not None:
+            row.plugin_name = plugin_name
+        if model_name is not None:
+            row.model_name = model_name
+        if set_base_url:
+            row.base_url = base_url
+        if touch_secret:
+            row.secret_backend = SecretBackend.ENCRYPTED
+            row.env_var_name = None
+            row.encrypted_payload = encrypted_payload
+            row.key_hint = key_hint
+        if extra is not None:
+            row.extra = extra
+        row.updated_at = datetime.now(UTC)
+        await self._session.flush()
+        await self._session.refresh(row)
+        return as_dict(row, exclude=_CREDENTIAL_SECRET)
 
     async def delete_credential(self, credential_id: UUID) -> bool:
         return await remove_by_pk(self._session, Credential, credential_id)

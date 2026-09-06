@@ -52,13 +52,24 @@ export function PipelinesPage() {
           {
             title: t('common.name'),
             dataIndex: 'name',
-            filters: [...new Set((pipelines.data ?? []).map((item) => item.name))]
-              .sort((a, b) => a.localeCompare(b))
-              .map((name) => ({ text: name, value: name })),
-            onFilter: (value, row) => row.name === value,
             render: (name: string, row) => <Link to={`/pipelines/${row.id}/edit`}>{name}</Link>,
           },
-          { title: t('common.type'), dataIndex: 'kind', width: 90 },
+          {
+            title: t('common.type'),
+            dataIndex: 'kind',
+            width: 90,
+            filters: [
+              { text: t('pipelines.ingest'), value: 'ingest' },
+              { text: t('pipelines.query'), value: 'query' },
+            ],
+            onFilter: (value, row) => row.kind === value,
+            render: (kind: string) =>
+              kind === 'ingest'
+                ? t('pipelines.ingest')
+                : kind === 'query'
+                  ? t('pipelines.query')
+                  : kind,
+          },
           {
             title: t('pipelines.slots'),
             render: (_, row) =>

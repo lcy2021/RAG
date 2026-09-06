@@ -2,6 +2,7 @@
 from engine.retrieval import cosine_similarity, split_sentences
 from engine.textsplit import DEFAULT_SEPARATORS, split_recursive
 from plugins.define import define_stage
+from plugins.params import param_float, param_int, text_unit_count
 
 _RECURSIVE_SCHEMA = {
     "type": "object",
@@ -31,8 +32,8 @@ async def run_recursive(data, params, ctx):
     text = data.get("raw_text") or ""
     pieces = split_recursive(
         text,
-        chunk_size=int(params.get("chunk_size", 512)),
-        overlap=int(params.get("overlap", 64)),
+        chunk_size=param_int(params, "chunk_size", 512),
+        overlap=param_int(params, "overlap", 64),
         separators=params.get("separators"),
     )
     data["chunks"] = _as_chunks(pieces, "recursive")
@@ -48,7 +49,10 @@ semantic = define_stage(
         "additionalProperties": False,
         "properties": {
             "similarity_threshold": {"type": "number"},
-            "max_tokens": {"type": "integer"},
+            "max_tokens": {
+                "type": "integer",
+                "description": "Max characters per chunk (same units as recursive chunk_size).",
+            },
             "binding_id": {"type": "string"},
         },
     },
@@ -65,15 +69,15 @@ async def run_semantic(data, params, ctx):
         data["chunks"] = []
         data["chunker_plugin"] = "semantic"
         return data
-    max_tokens = int(params.get("max_tokens") or 512)
-    threshold = float(params.get("similarity_threshold") or 0.8)
+    max_chars = param_int(params, "max_tokens", 512)
+    threshold = param_float(params, "similarity_threshold", 0.8)
     vectors = await ctx.embed_texts(sentences, params.get("binding_id"))
     groups: list[str] = []
     current = sentences[0]
     for index in range(1, len(sentences)):
         similar = cosine_similarity(vectors[index - 1], vectors[index]) >= threshold
         candidate = f"{current} {sentences[index]}".strip()
-        if similar and len(candidate.split()) <= max_tokens:
+        if similar and len(candidate) <= max_chars:
             current = candidate
             continue
         groups.append(current)
@@ -91,8 +95,14 @@ parent_child = define_stage(
         "type": "object",
         "additionalProperties": False,
         "properties": {
-            "parent_max_tokens": {"type": "integer"},
-            "child_max_tokens": {"type": "integer"},
+            "parent_max_tokens": {
+                "type": "integer",
+                "description": "Parent chunk size in characters.",
+            },
+            "child_max_tokens": {
+                "type": "integer",
+                "description": "Child chunk size in characters.",
+            },
             "overlap": {"type": "integer"},
         },
     },
@@ -104,9 +114,9 @@ parent_child = define_stage(
 @parent_child.run
 async def run_parent_child(data, params, ctx):
     """Small children for retrieval, large parents returned to the generator."""
-    parent_size = int(params.get("parent_max_tokens") or 1024)
-    child_size = int(params.get("child_max_tokens") or 256)
-    overlap = int(params.get("overlap") or 32)
+    parent_size = param_int(params, "parent_max_tokens", 1024)
+    child_size = param_int(params, "child_max_tokens", 256)
+    overlap = param_int(params, "overlap", 32)
     parents = split_recursive(data.get("raw_text") or "", chunk_size=parent_size, overlap=0)
     chunks: list[dict] = []
     ordinal = 0
@@ -115,21 +125,21 @@ async def run_parent_child(data, params, ctx):
             {
                 "ordinal": ordinal,
                 "content": parent,
-                "token_count": len(parent.split()),
+                "token_count": text_unit_count(parent),
                 "metadata": {"role": "parent", "parent_ordinal": parent_ordinal},
                 "embed": False,
             }
         )
         parent_index = ordinal
         ordinal += 1
-        child_overlap = min(overlap, child_size - 1)
+        child_overlap = min(overlap, max(child_size - 1, 0))
         children = split_recursive(parent, chunk_size=child_size, overlap=child_overlap)
         for child in children:
             chunks.append(
                 {
                     "ordinal": ordinal,
                     "content": child,
-                    "token_count": len(child.split()),
+                    "token_count": text_unit_count(child),
                     "metadata": {
                         "role": "child",
                         "parent_ordinal": parent_ordinal,
@@ -162,8 +172,8 @@ heading = define_stage(
 @heading.run
 async def run_heading(data, params, ctx):
     """Split on Markdown headings, then recursive-split oversized sections."""
-    limit = int(params.get("chunk_size") or 1024)
-    overlap = int(params.get("overlap") or 0)
+    limit = param_int(params, "chunk_size", 1024)
+    overlap = param_int(params, "overlap", 0)
     pieces: list[str] = []
     metas: list[dict] = []
     for section in split_by_heading(data.get("raw_text") or ""):
@@ -180,7 +190,7 @@ async def run_heading(data, params, ctx):
         {
             "ordinal": index,
             "content": piece,
-            "token_count": len(piece.split()),
+            "token_count": text_unit_count(piece),
             "metadata": metas[index],
         }
         for index, piece in enumerate(pieces)
@@ -194,7 +204,7 @@ def _as_chunks(pieces: list[str], plugin: str) -> list[dict]:
         {
             "ordinal": index,
             "content": piece,
-            "token_count": len(piece.split()),
+            "token_count": text_unit_count(piece),
             "metadata": {"chunker": plugin},
         }
         for index, piece in enumerate(pieces)

@@ -1,6 +1,6 @@
 {
   "nav": {
-    "settings": "Settings",
+    "credentials": "Credentials",
     "plugins": "Plugins",
     "pipelines": "Pipelines",
     "kb": "Knowledge bases",
@@ -53,25 +53,27 @@
     "generator": "Generator",
     "evaluator": "Evaluator"
   },
-  "settings": {
-    "title": "Settings",
-    "subtitle": "Register a vector or LLM credential. The secret is stored at rest; the list only shows a key hint. Pipeline plugins reference it with binding_id — never put api_key in params. There is no separate rerank credential kind; wire real rerank models via a custom plugin.",
-    "credentials": "Credentials",
+  "credentials": {
+    "title": "Credentials",
+    "subtitle": "Register a vector or LLM credential.",
     "kind": "Kind",
     "kind_vector": "Vector",
     "kind_llm": "LLM",
     "secret": "Secret",
+    "secretKeepHint": "Leave blank to keep the current secret",
+    "secretPlaceholder": "Current {{hint}}; leave blank to keep",
     "keyHint": "Key hint",
-    "deleteCredential": "Delete this credential?",
-    "credentialSaved": "Saved (plaintext is never returned in the list)",
+    "deleteConfirm": "Delete this credential?",
+    "saved": "Saved (plaintext is never returned in the list)",
     "model": "Model",
     "baseUrl": "Base URL",
     "dim": "Embedding dim",
-    "addCredential": "New credential"
+    "add": "New credential",
+    "edit": "Edit credential"
   },
   "plugins": {
     "title": "Plugin hub",
-    "subtitle": "Builtin catalog comes from the server registry. bge-reranker is an LLM stand-in; real Cross-Encoders (e.g. BAAI/bge-reranker-v2-m3) need a custom plugin. Custom .py upload is M5; browse-only for now.",
+    "subtitle": "Catalog from the server registry. Add plugins by editing backend/src/plugins/custom/ (or builtin), then restart; this page is browse-only. bge-reranker is an LLM stand-in—real Cross-Encoders need your own plugin.",
     "stage": "Stage",
     "version": "Version",
     "source": "Source",
@@ -79,7 +81,7 @@
   },
   "pipelines": {
     "title": "Pipelines",
-    "subtitle": "Browse saved pipelines; Add or Edit picks plugins per stage. Query retriever slot can use Hybrid: dense + bm25, then rrf fusion. Builtin reranker is an LLM stand-in; real rerank models need a custom plugin.",
+    "subtitle": "Configure ingest and query pipelines.",
     "createTitle": "New pipeline",
     "editTitle": "Edit pipeline",
     "notFound": "Pipeline not found",

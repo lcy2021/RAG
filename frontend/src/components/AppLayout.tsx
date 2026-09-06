@@ -4,8 +4,8 @@ import {
   CommentOutlined,
   DatabaseOutlined,
   ExperimentOutlined,
+  KeyOutlined,
   NodeIndexOutlined,
-  SettingOutlined,
   ThunderboltOutlined,
 } from '@ant-design/icons'
 import { Layout, Menu, Space, Typography } from 'antd'
@@ -20,7 +20,7 @@ import { LanguageSwitch } from './LanguageSwitch'
 import './AppLayout.css'
 
 const ICONS: Record<string, ReactNode> = {
-  '/settings': <SettingOutlined />,
+  '/credentials': <KeyOutlined />,
   '/plugins': <AppstoreOutlined />,
   '/pipelines': <NodeIndexOutlined />,
   '/kb': <DatabaseOutlined />,
@@ -30,7 +30,7 @@ const ICONS: Record<string, ReactNode> = {
 }
 
 const NAV_LABEL_KEYS: Record<string, string> = {
-  '/settings': 'nav.settings',
+  '/credentials': 'nav.credentials',
   '/plugins': 'nav.plugins',
   '/pipelines': 'nav.pipelines',
   '/kb': 'nav.kb',
@@ -46,7 +46,7 @@ export function AppLayout() {
   const selected =
     NAV_ITEMS.find(
       (item) => location.pathname === item.key || location.pathname.startsWith(`${item.key}/`),
-    )?.key ?? '/settings'
+    )?.key ?? '/credentials'
   const isChat = location.pathname === '/chat' || location.pathname.startsWith('/chat/')
   const apiOk = health.data?.status === 'ok'
   const dbOk = health.data?.database === 'ok'

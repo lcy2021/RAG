@@ -1,5 +1,6 @@
 ﻿from engine.retrieval import bm25_scores, reciprocal_rank_fusion, tokenize
 from plugins.define import define_stage
+from plugins.params import param_float, param_int
 
 
 def _store_list(data: dict, name: str, retrieved: list[dict]) -> None:
@@ -42,7 +43,7 @@ dense = define_stage(
 async def run_dense(data, params, ctx):
     queries = data.get("search_queries") or [data.get("rewritten_query") or data.get("query") or ""]
     collection_id = data["vector_collection_id"]
-    top_k = int(params.get("top_k") or 20)
+    top_k = param_int(params, "top_k", 20)
     ranked_lists: list[list[dict]] = []
     for query in queries:
         if not query:
@@ -93,7 +94,7 @@ async def run_bm25(data, params, ctx):
     query = data.get("rewritten_query") or data.get("query") or ""
     extra_queries = data.get("search_queries") or [query]
     collection_id = data["vector_collection_id"]
-    top_k = int(params.get("top_k") or 20)
+    top_k = param_int(params, "top_k", 20)
     corpus = await ctx.kb_repo.list_collection_chunks(collection_id)
     tokenized_docs = [tokenize(row.get("expanded_content") or row["content"]) for row in corpus]
     ranked_lists: list[list[dict]] = []
@@ -101,8 +102,8 @@ async def run_bm25(data, params, ctx):
         scores = bm25_scores(
             tokenize(search_query),
             tokenized_docs,
-            k1=float(params.get("k1") or 1.2),
-            b=float(params.get("b") or 0.75),
+            k1=param_float(params, "k1", 1.2),
+            b=param_float(params, "b", 0.75),
         )
         indexed = list(zip(scores, corpus, strict=True))
         indexed.sort(key=lambda pair: pair[0], reverse=True)

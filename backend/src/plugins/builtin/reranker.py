@@ -1,5 +1,6 @@
 ﻿from engine.retrieval import parse_json_object
 from plugins.define import define_stage
+from plugins.params import param_int, retrieval_query
 
 none_reranker = define_stage(
     stage="reranker",
@@ -38,8 +39,8 @@ bge_reranker = define_stage(
 async def run_bge(data, params, ctx):
     """Cross-encoder style scores via the generator binding (lab stand-in for BGE)."""
     retrieved = list(data.get("retrieved") or [])
-    top_n = int(params.get("top_n") or 5)
-    query = data.get("query") or ""
+    top_n = param_int(params, "top_n", 5)
+    query = retrieval_query(data)
     scored: list[tuple[float, dict]] = []
     for item in retrieved:
         raw = await ctx.chat_complete(
@@ -69,7 +70,7 @@ async def run_bge(data, params, ctx):
         scored.append((score, cloned))
     scored.sort(key=lambda pair: pair[0], reverse=True)
     ranked = []
-    for rank, (_, item) in enumerate(scored[:top_n], start=1):
+    for rank, (_, item) in enumerate(scored[: max(top_n, 0)], start=1):
         item["rank"] = rank
         ranked.append(item)
     data["retrieved"] = ranked

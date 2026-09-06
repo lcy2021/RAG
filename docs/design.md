@@ -8,7 +8,7 @@
 
 ## 中文
 
-RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、知识库、对比评测与对话都在页面上完成，写入 **PostgreSQL + pgvector**（稠密向量在 `chunk_embeddings`）。配置以 UI + API 为准；自定义插件经 `RAGLAB_CUSTOM_PLUGIN_DIR` 加载。
+RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、知识库、对比评测与对话都在页面上完成，写入 **PostgreSQL + pgvector**（稠密向量在 `chunk_embeddings`）。配置以 UI + API 为准；自定义插件放在 `backend/src/plugins/custom/`。
 
 ### 目标
 
@@ -20,8 +20,8 @@ RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、�
 
 | 页面 | 操作 |
 |---|---|
-| 设置 / 密钥 | 登记向量或 LLM 凭证；密钥入库（列表显示 key_hint） |
-| 插件 | 浏览内置目录；自定义 `.py` 经 `RAGLAB_CUSTOM_PLUGIN_DIR` 注册（表单由 `config_schema` 生成） |
+| 凭证 | 登记向量或 LLM 凭证（可编辑）；密钥 UTF-8 写入 `encrypted_payload`（列表显示 key_hint） |
+| 插件 | 浏览内置目录；自定义 `.py` 放在 `plugins/custom/`（表单由 `config_schema` 生成） |
 | 流水线 | 可视化槽位：每环节选插件、填 params；检索槽可 `ensemble` |
 | 知识库 | 建库、上传文档、看 ingest 任务、管理向量 collection |
 | 场景 | 评测题（问题、参考答案、原文依据）、指标与权重 |
@@ -40,7 +40,7 @@ RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、�
 
 ### 实现状态
 
-设置 / 插件 / 流水线 / 知识库 / 场景 / 实验（多流水线并行评测 + 晋级）/ 对话（SSE）已落地。入库侧换 embedding/切块通过新建 collection 再 ingest。
+凭证 / 插件 / 流水线 / 知识库 / 场景 / 实验（多流水线并行评测 + 晋级）/ 对话（SSE）已落地。入库侧换 embedding/切块通过新建 collection 再 ingest。
 
 ---
 
@@ -48,7 +48,7 @@ RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、�
 
 <a id="english"></a>
 
-RAG Lab is a browser-based, pluggable RAG workbench: credentials, pipelines, knowledge bases, compare/eval, and chat are done in the UI and stored in **PostgreSQL + pgvector** (`chunk_embeddings`). The UI + APIs are the source of truth; custom plugins load from `RAGLAB_CUSTOM_PLUGIN_DIR`.
+RAG Lab is a browser-based, pluggable RAG workbench: credentials, pipelines, knowledge bases, compare/eval, and chat are done in the UI and stored in **PostgreSQL + pgvector** (`chunk_embeddings`). The UI + APIs are the source of truth; custom plugins live under `backend/src/plugins/custom/`.
 
 ### Goals
 
@@ -60,8 +60,8 @@ Capabilities: full ingest + query plugins; compare via multiple complete query p
 
 | Page | What you do |
 |---|---|
-| Settings / credentials | Vector or LLM credential (list shows key hint) |
-| Plugins | Builtin catalog; custom `.py` via `RAGLAB_CUSTOM_PLUGIN_DIR`; param forms from `config_schema` |
+| Credentials | Vector or LLM credential (create/edit; UTF-8 in `encrypted_payload`; list shows key hint) |
+| Plugins | Builtin catalog; custom `.py` under `plugins/custom/`; param forms from `config_schema` |
 | Pipelines | Visual slots: pick plugin + params per stage; retriever may be `ensemble` |
 | Knowledge bases | Create, upload docs, ingest jobs, vector collections |
 | Scenarios | Gold questions + document evidence spans, metrics, weights |
@@ -80,4 +80,4 @@ A scenario is KB + gold set + metrics. Labels are document character spans. `eva
 
 ### Status
 
-Settings / plugins / pipelines / KB / scenarios / experiments (parallel multi-pipeline eval + promote) / chat (SSE) are shipped. Ingest-side embedder/chunker swaps use a new collection and reingest.
+Credentials / plugins / pipelines / KB / scenarios / experiments (parallel multi-pipeline eval + promote) / chat (SSE) are shipped. Ingest-side embedder/chunker swaps use a new collection and reingest.

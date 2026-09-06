@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Table } from 'antd'
+import { Button, Popconfirm, Space, Table } from 'antd'
 import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
@@ -8,7 +8,7 @@ import { ListPageHeader } from '../components/ListPageHeader'
 import { useMessage } from '../hooks/useMessage'
 import { matchesQuery } from '../lib/matchesQuery'
 
-export function SettingsPage() {
+export function CredentialsPage() {
   const { t } = useTranslation()
   const message = useMessage()
   const navigate = useNavigate()
@@ -29,11 +29,11 @@ export function SettingsPage() {
   return (
     <>
       <ListPageHeader
-        title={t('settings.title')}
-        subtitle={t('settings.subtitle')}
+        title={t('credentials.title')}
+        subtitle={t('credentials.subtitle')}
         query={query}
         onQueryChange={setQuery}
-        onAdd={() => navigate('/settings/credentials/new')}
+        onAdd={() => navigate('/credentials/new')}
       />
       <Table
         style={{ marginTop: 16 }}
@@ -45,41 +45,48 @@ export function SettingsPage() {
         columns={[
           { title: t('common.name'), dataIndex: 'name' },
           {
-            title: t('settings.kind'),
+            title: t('credentials.kind'),
             dataIndex: 'kind',
             width: 100,
-            render: (kind: string) => t(`settings.kind_${kind}`, { defaultValue: kind }),
+            render: (kind: string) => t(`credentials.kind_${kind}`, { defaultValue: kind }),
           },
-          { title: t('settings.model'), dataIndex: 'model_name' },
+          { title: t('credentials.model'), dataIndex: 'model_name' },
           {
-            title: t('settings.baseUrl'),
+            title: t('credentials.baseUrl'),
             dataIndex: 'base_url',
             render: (value: string | null) => value || t('common.none'),
           },
           {
-            title: t('settings.keyHint'),
+            title: t('credentials.keyHint'),
             dataIndex: 'key_hint',
             render: (value: string | null) => value || t('common.none'),
           },
           {
             title: '',
-            width: 80,
+            width: 140,
             render: (_, row) => (
-              <Popconfirm
-                title={t('settings.deleteCredential')}
-                onConfirm={async () => {
-                  try {
-                    await remove.mutateAsync(row.id)
-                    message.success(t('common.deleted'))
-                  } catch (error) {
-                    message.error(error instanceof Error ? error.message : t('common.deleteFailed'))
-                  }
-                }}
-              >
-                <Button danger type="link" size="small">
-                  {t('common.delete')}
+              <Space size={0}>
+                <Button type="link" size="small" onClick={() => navigate(`/credentials/${row.id}/edit`)}>
+                  {t('common.edit')}
                 </Button>
-              </Popconfirm>
+                <Popconfirm
+                  title={t('credentials.deleteConfirm')}
+                  onConfirm={async () => {
+                    try {
+                      await remove.mutateAsync(row.id)
+                      message.success(t('common.deleted'))
+                    } catch (error) {
+                      message.error(
+                        error instanceof Error ? error.message : t('common.deleteFailed'),
+                      )
+                    }
+                  }}
+                >
+                  <Button danger type="link" size="small">
+                    {t('common.delete')}
+                  </Button>
+                </Popconfirm>
+              </Space>
             ),
           },
         ]}

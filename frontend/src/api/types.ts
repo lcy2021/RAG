@@ -51,6 +51,16 @@ export type CredentialCreate = {
   extra?: Record<string, unknown>
 }
 
+export type CredentialUpdate = {
+  name?: string
+  kind?: CredentialKind
+  model_name?: string
+  secret?: string | null
+  provider?: string
+  base_url?: string | null
+  extra?: Record<string, unknown>
+}
+
 export type SlotBinding = {
   name: string
   params: Record<string, unknown>

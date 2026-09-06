@@ -107,26 +107,38 @@
   color: var(--rl-text-faint);
 }
 
-.chat-shell {
-  display: flex;
-  flex-direction: column;
+.chat-main-pane {
   flex: 1;
   min-width: 0;
   min-height: 0;
   height: 100%;
-  max-width: 860px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.chat-shell {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  margin: 0 auto;
+  max-width: 860px;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
   padding: 16px 20px 20px;
   box-sizing: border-box;
 }
 
 .chat-progress {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   margin: 0 0 12px;
   border: 1px solid var(--rl-border);
   border-radius: var(--rl-radius);
   background: var(--rl-surface);
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .chat-progress-bar {
@@ -370,6 +382,9 @@
   border: 1px solid var(--rl-border);
   font-size: 13px;
   white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .chat-stage-passages {
@@ -423,13 +438,22 @@
 
 .chat-bubble {
   max-width: min(720px, 88%);
+  min-width: 0;
   padding: 11px 14px;
   border-radius: 12px;
   background: var(--rl-surface);
   border: 1px solid var(--rl-border);
   white-space: pre-wrap;
   word-break: break-word;
+  overflow-wrap: anywhere;
   color: var(--rl-text);
+  box-sizing: border-box;
+}
+
+/* Progress starts sparse then fills in — lock width so the bubble does not grow mid-run. */
+.chat-bubble-row.is-assistant .chat-bubble:has(.chat-progress) {
+  width: min(720px, 88%);
+  max-width: min(720px, 88%);
 }
 
 .chat-bubble-row.is-user .chat-bubble {

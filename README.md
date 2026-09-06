@@ -70,13 +70,13 @@ def apply(registry):
     registry.register(plugin)
 ```
 
-内置插件同一套 API。自定义：把带 `apply` 的 `.py` 放进 `RAGLAB_CUSTOM_PLUGIN_DIR`，进程启动时加载并写入插件目录表。
+内置插件同一套 API。自定义：在 `backend/src/plugins/custom/` 直接改代码，进程启动时加载并写入插件目录表；无上传入口。
 
 #### 内置插件目录
 
 | 阶段 | 可插拔实现 |
 | --- | --- |
-| loader | `auto`（默认；按类型路由 text / markup / layout / table / ocr）；亦可单独选 `text`、`markup`、`layout`、`table`、`ocr`（`text_file`=auto 别名） |
+| loader | `auto`（默认；按类型路由 text / markup / layout / table / ocr）；亦可单独选 `text`、`markup`、`layout`、`table`、`ocr` |
 | chunker | `recursive`, `semantic`, `parent_child`, `heading` |
 | embedder | `openai_embedder`, `local_embedder` |
 | indexer | `pgvector` |
@@ -99,7 +99,7 @@ def apply(registry):
 6. **实验** — 绑定场景与至少两条已有查询流水线；后台排队离线跑评；按加权指标排序；可**晋级**胜出流水线为知识库默认。
 7. **对话** — 默认选中第一个知识库与第一条查询流水线；多轮问答（SSE：`progress` 阶段进度 + 流式回答）；进度区可展开查看各阶段完整结果（改写句、段落正文与分数）；每条助手回答底部展示最终引用来源。
 
-换插件即换配方，同一套页面与存储。自定义插件：将带 `apply` 的 `.py` 放入 `RAGLAB_CUSTOM_PLUGIN_DIR`。
+换插件即换配方，同一套页面与存储。自定义插件：在 `backend/src/plugins/custom/` 直接改代码。
 
 ### 技术栈
 
@@ -147,7 +147,7 @@ cd frontend && npm run lint && npm test
 ```
 frontend/                 槽位编辑、插件目录、入库、对话
 backend/src/
-  plugins/                define_stage、registry、builtin、自定义加载
+  plugins/                define_stage、registry、builtin、custom（自定义插件目录）
   engine/                 按槽位跑插件、ensemble、RRF
   api/ services/ ...
   main.py
@@ -236,13 +236,13 @@ def apply(registry):
     registry.register(plugin)
 ```
 
-Builtins use the same API. Custom: drop a `.py` with `apply` into `RAGLAB_CUSTOM_PLUGIN_DIR`; loaded at process start into the plugin catalog.
+Builtins use the same API. Custom: edit `backend/src/plugins/custom/` in place; loaded at process start into the plugin catalog. No upload UI.
 
 #### Builtin catalog
 
 | Stage | Pluggable implementations |
 | --- | --- |
-| loader | `auto` (default; routes by type to text / markup / layout / table / ocr); or `text`, `markup`, `layout`, `table`, `ocr` alone (`text_file` = alias of auto) |
+| loader | `auto` (default; routes by type to text / markup / layout / table / ocr); or `text`, `markup`, `layout`, `table`, `ocr` alone |
 | chunker | `recursive`, `semantic`, `parent_child`, `heading` |
 | embedder | `openai_embedder`, `local_embedder` |
 | indexer | `pgvector` |
@@ -265,7 +265,7 @@ Builtins use the same API. Custom: drop a `.py` with `apply` into `RAGLAB_CUSTOM
 6. **Experiments** — Bind a scenario to two or more existing query pipelines; queue **one offline eval job per pipeline** (parallel, with per-pipeline progress); rank by weighted metrics; **promote** the winner as the KB default query pipeline.
 7. **Chat** — Defaults to first KB and first query pipeline; multi-turn Q&A (SSE: `progress` + streamed answer); expand progress for full stage outputs; citations under each assistant reply.
 
-Swap plugins to swap recipes—same UI and storage. Custom plugins: drop a `.py` with `apply` into `RAGLAB_CUSTOM_PLUGIN_DIR`.
+Swap plugins to swap recipes—same UI and storage. Custom plugins: edit `backend/src/plugins/custom/` in place.
 
 ### Tech stack
 
@@ -313,7 +313,7 @@ cd frontend && npm run lint && npm test
 ```
 frontend/                 Slot editor, plugin catalog, ingest, chat
 backend/src/
-  plugins/                define_stage, registry, builtin, custom loader
+  plugins/                define_stage, registry, builtin, custom (drop-in plugins)
   engine/                 Slot runner, ensemble, RRF
   api/ services/ ...
   main.py

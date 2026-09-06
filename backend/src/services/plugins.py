@@ -48,5 +48,7 @@ class PluginCatalogService:
 
     async def sync_to_database(self, session: AsyncSession) -> int:
         plugins = self._registry.list_all()
-        await PluginRepository(session).upsert_all(plugins)
+        repo = PluginRepository(session)
+        await repo.upsert_all(plugins)
+        await repo.disable_absent({(plugin.stage.value, plugin.name) for plugin in plugins})
         return len(plugins)

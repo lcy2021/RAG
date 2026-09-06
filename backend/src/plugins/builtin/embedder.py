@@ -1,4 +1,5 @@
 ﻿from plugins.define import define_stage
+from plugins.params import param_int
 
 _EMBEDDER_SCHEMA = {
     "type": "object",
@@ -27,7 +28,9 @@ def _embedder(name: str, default_batch_size: int, description: str):
             data["embeddings"] = []
             data["embedder_plugin"] = name
             return data
-        batch_size = int(params.get("batch_size") or default_batch_size)
+        batch_size = param_int(params, "batch_size", default_batch_size)
+        if batch_size <= 0:
+            raise ValueError("batch_size must be positive")
         binding_id = params.get("binding_id")
         vectors: list[list[float]] = []
         texts = [chunk["content"] for chunk in targets]

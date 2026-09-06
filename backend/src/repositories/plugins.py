@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import select
+from sqlalchemy import select, tuple_, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -42,6 +42,18 @@ class PluginRepository:
                 },
             )
             await self._session.execute(stmt)
+
+    async def disable_absent(self, present: set[tuple[str, str]]) -> None:
+        """Disable catalog rows whose (stage, name) are no longer registered."""
+        if not present:
+            await self._session.execute(update(PluginRow).values(is_enabled=False))
+            return
+        pairs = list(present)
+        await self._session.execute(
+            update(PluginRow)
+            .where(tuple_(PluginRow.stage, PluginRow.name).notin_(pairs))
+            .values(is_enabled=False)
+        )
 
     async def list_enabled(self) -> list[dict[str, Any]]:
         result = await self._session.scalars(

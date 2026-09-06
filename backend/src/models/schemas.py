@@ -51,6 +51,21 @@ class CredentialCreate(BaseModel):
         return self
 
 
+class CredentialUpdate(BaseModel):
+    """Partial update. Omit secret (or leave blank) to keep the stored key."""
+
+    name: str | None = None
+    kind: CredentialKind | None = None
+    model_name: str | None = None
+    secret: str | None = Field(
+        default=None,
+        description="New key; omit or blank to keep the existing secret",
+    )
+    provider: str | None = None
+    base_url: str | None = None
+    extra: dict[str, Any] | None = None
+
+
 class CredentialOut(BaseModel):
     id: UUID
     name: str

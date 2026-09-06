@@ -11,15 +11,15 @@
 
 实现：`frontend/`，Vite + React + TypeScript。选用 **Ant Design**（布局、表格、表单、上传、JSON Schema 槽位）。界面文案用 **i18next**（中/英，顶栏切换，写入 `localStorage`）。开发时 Vite 代理 `/api` → FastAPI（`localhost:6660`）。
 
-已实现：`/settings`、`/plugins`、`/pipelines`、`/kb`、`/scenarios`、`/experiments`、`/chat`。
+已实现：`/credentials`、`/plugins`、`/pipelines`、`/kb`、`/scenarios`、`/experiments`、`/chat`。
 
 ### 信息架构
 
 ```
-设置
-  向量 / LLM 凭证
+凭证
+  向量 / LLM（支持新增与编辑）
 插件中心
-  内置目录（自定义插件经 RAGLAB_CUSTOM_PLUGIN_DIR）
+  内置目录（自定义插件：plugins/custom/）
 流水线
   入库流水线 / 查询流水线（槽位编辑器）
 知识库
@@ -42,7 +42,7 @@
 
 | 路径 | 页面 |
 |---|---|
-| `/settings` | 凭证（向量 / LLM） |
+| `/credentials` | 凭证（向量 / LLM，可编辑） |
 | `/plugins` | 插件目录 |
 | `/pipelines` | 流水线编辑 |
 | `/kb` | 知识库与文档 |
@@ -60,11 +60,11 @@ The operator surface is the browser. APIs serve the UI. Configuration is done on
 
 Implementation: `frontend/` with Vite + React + TypeScript. **Ant Design** covers the lab console (layout, tables, forms, upload, JSON Schema slots). Copy is **i18next**-driven (zh/en, header switch, persisted in `localStorage`). Vite proxies `/api` to FastAPI on port 6660.
 
-Shipped routes: `/settings`, `/plugins`, `/pipelines`, `/kb`, `/scenarios`, `/experiments`, `/chat`.
+Shipped routes: `/credentials`, `/plugins`, `/pipelines`, `/kb`, `/scenarios`, `/experiments`, `/chat`.
 
 ### Information architecture
 
-Settings (vector/LLM credentials) → Plugin hub (builtin catalog; custom plugins via `RAGLAB_CUSTOM_PLUGIN_DIR`) → Pipelines (ingest / query slot editor) → Knowledge bases (upload, jobs, collections) → Scenarios (items, spans, weights) → Experiments (compare builder, runs, traces, promote) → Chat (composer with KB + query pipeline selectors; expandable stage timeline with full passage results; final Sources under the answer).
+Credentials (vector/LLM) → Plugin hub (builtin catalog; custom plugins in `plugins/custom/`) → Pipelines (ingest / query slot editor) → Knowledge bases (upload, jobs, collections) → Scenarios (items, spans, weights) → Experiments (compare builder, runs, traces, promote) → Chat (composer with KB + query pipeline selectors; expandable stage timeline with full passage results; final Sources under the answer).
 
 ### Key interactions
 
@@ -74,4 +74,4 @@ Settings (vector/LLM credentials) → Plugin hub (builtin catalog; custom plugin
 
 ### Routes
 
-`/settings`, `/plugins`, `/pipelines`, `/kb`, `/scenarios`, `/experiments`, `/chat`.
+`/credentials`, `/plugins`, `/pipelines`, `/kb`, `/scenarios`, `/experiments`, `/chat`.

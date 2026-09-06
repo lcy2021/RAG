@@ -5,7 +5,8 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from './components/AppLayout'
 import { LocaleProvider } from './i18n/LocaleProvider'
 import { ChatPage } from './pages/ChatPage'
-import { CredentialCreatePage } from './pages/CredentialCreatePage'
+import { CredentialCreatePage, CredentialEditPage } from './pages/CredentialFormPage'
+import { CredentialsPage } from './pages/CredentialsPage'
 import { ExperimentCreatePage } from './pages/ExperimentCreatePage'
 import { ExperimentDetailPage } from './pages/ExperimentDetailPage'
 import { ExperimentsPage } from './pages/ExperimentsPage'
@@ -18,7 +19,6 @@ import { PluginsPage } from './pages/PluginsPage'
 import { ScenarioCreatePage } from './pages/ScenarioCreatePage'
 import { ScenarioDetailPage } from './pages/ScenarioDetailPage'
 import { ScenariosPage } from './pages/ScenariosPage'
-import { SettingsPage } from './pages/SettingsPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,9 +37,15 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               <Route element={<AppLayout />}>
-                <Route path="/" element={<Navigate to="/settings" replace />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/settings/credentials/new" element={<CredentialCreatePage />} />
+                <Route path="/" element={<Navigate to="/credentials" replace />} />
+                <Route path="/settings" element={<Navigate to="/credentials" replace />} />
+                <Route
+                  path="/settings/credentials/new"
+                  element={<Navigate to="/credentials/new" replace />}
+                />
+                <Route path="/credentials" element={<CredentialsPage />} />
+                <Route path="/credentials/new" element={<CredentialCreatePage />} />
+                <Route path="/credentials/:id/edit" element={<CredentialEditPage />} />
                 <Route path="/plugins" element={<PluginsPage />} />
                 <Route path="/pipelines" element={<PipelinesPage />} />
                 <Route path="/pipelines/new" element={<PipelineCreatePage />} />
