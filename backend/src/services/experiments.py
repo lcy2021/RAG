@@ -413,6 +413,7 @@ class ExperimentService:
                     )
                     answer = result.get("answer") or ""
                     latency = int((time.perf_counter() - started) * 1000)
+                    usage = ctx.usage.persist_fields()
                     await self._chat.finish_rag_run(
                         rag_run["id"],
                         status="succeeded",
@@ -420,6 +421,7 @@ class ExperimentService:
                         rewritten_query=result.get("rewritten_query"),
                         error_message=None,
                         latency_ms=latency,
+                        **usage,
                     )
                     await self._persist_retrieval(rag_run["id"], result, answer)
                     scored = await self._score_metrics(
@@ -444,6 +446,7 @@ class ExperimentService:
                     latency = int((time.perf_counter() - started) * 1000)
                     error_message = str(exc)
                     try:
+                        usage = ctx.usage.persist_fields()
                         await self._chat.finish_rag_run(
                             rag_run["id"],
                             status="failed",
@@ -451,6 +454,7 @@ class ExperimentService:
                             rewritten_query=None,
                             error_message=error_message,
                             latency_ms=latency,
+                            **usage,
                         )
                         for span in ctx.trace.spans:
                             await self._chat.insert_stage_trace(
@@ -570,6 +574,9 @@ class ExperimentService:
         latencies: dict[UUID, list[int]] = {
             UUID(str(item["id"])): [] for item in variants
         }
+        costs: dict[UUID, list[int]] = {
+            UUID(str(item["id"])): [] for item in variants
+        }
         for score in scores:
             vid = score["compare_variant_id"]
             if vid not in metric_values:
@@ -584,6 +591,8 @@ class ExperimentService:
             if row.get("status") != "succeeded" or row.get("latency_ms") is None:
                 continue
             latencies[vid].append(int(row["latency_ms"]))
+            if row.get("cost_micros") is not None:
+                costs[vid].append(int(row["cost_micros"]))
 
         summary_variants = [
             {"id": UUID(str(item["id"])), "label": item.get("label") or str(item["id"])}
@@ -596,7 +605,9 @@ class ExperimentService:
             weights=weights,
             metric_values=metric_values,
             latencies=latencies,
+            costs=costs,
             latency_p95_max=(scenario_detail or {}).get("latency_p95_ms_max"),
+            cost_micros_max=(scenario_detail or {}).get("cost_micros_max"),
         )
         await self._repo.replace_summaries(run_id, summaries)
 
@@ -894,7 +905,9 @@ class ExperimentService:
         weights: dict[str, float],
         metric_values: dict[UUID, dict[str, list[float]]],
         latencies: dict[UUID, list[int]],
+        costs: dict[UUID, list[int]],
         latency_p95_max: int | None,
+        cost_micros_max: int | None,
     ) -> list[dict[str, Any]]:
         weight_sum = sum(float(weights.get(m, 1.0)) for m in metrics) or 1.0
         rows: list[dict[str, Any]] = []
@@ -921,8 +934,18 @@ class ExperimentService:
                 sorted_lags = sorted(lags)
                 index = max(0, min(len(sorted_lags) - 1, int(math.ceil(0.95 * len(sorted_lags)) - 1)))
                 p95 = int(sorted_lags[index])
+            cost_values = costs.get(vid) or []
+            cost_avg = (
+                int(round(sum(cost_values) / len(cost_values))) if cost_values else None
+            )
             eligible = True
             if latency_p95_max is not None and p95 is not None and p95 > latency_p95_max:
+                eligible = False
+            if (
+                cost_micros_max is not None
+                and cost_avg is not None
+                and cost_avg > cost_micros_max
+            ):
                 eligible = False
             rows.append(
                 {
@@ -932,7 +955,7 @@ class ExperimentService:
                     "composite_score": composite if eligible else None,
                     "latency_p50_ms": p50,
                     "latency_p95_ms": p95,
-                    "cost_micros_avg": None,
+                    "cost_micros_avg": cost_avg,
                     "eligible": eligible,
                 }
             )
@@ -952,7 +975,7 @@ class ExperimentService:
                     "composite_score": row["composite_score"],
                     "latency_p50_ms": row["latency_p50_ms"],
                     "latency_p95_ms": row["latency_p95_ms"],
-                    "cost_micros_avg": None,
+                    "cost_micros_avg": row["cost_micros_avg"],
                     "rank": index,
                     "is_winner": index == 1 and row["composite_score"] is not None,
                 }

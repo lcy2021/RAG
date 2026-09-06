@@ -380,6 +380,12 @@ export function ExperimentDetailPage() {
                 dataIndex: 'latency_p95_ms',
                 render: (value: number | null) => (value == null ? t('common.none') : `${value}ms`),
               },
+              {
+                title: t('experiments.costAvg'),
+                dataIndex: 'cost_micros_avg',
+                render: (value: number | null) =>
+                  value == null ? t('common.none') : `${value}`,
+              },
             ]}
           />
         )}

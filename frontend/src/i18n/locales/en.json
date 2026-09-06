@@ -6,7 +6,8 @@
     "kb": "Knowledge bases",
     "scenarios": "Scenarios",
     "experiments": "Experiments",
-    "chat": "Chat"
+    "chat": "Chat",
+    "usage": "Usage"
   },
   "layout": {
     "brand": "RAG Lab",
@@ -285,6 +286,7 @@
     "variant": "Pipeline",
     "composite": "Composite",
     "latencyP95": "Latency p95",
+    "costAvg": "Avg cost (micros)",
     "winner": "Winner",
     "tie": "Tie",
     "chartsTitle": "Charts",
@@ -292,11 +294,37 @@
     "chartMetrics": "Metric comparison",
     "chartMetric": "{{metric}}",
     "chartLatency": "Latency p95 (ms)",
+    "chartCost": "Avg cost (micros)",
     "noChartData": "No summary data to chart",
     "export": "Export",
     "exportSummariesCsv": "Summaries CSV",
     "exportScoresCsv": "Per-item scores CSV",
     "exportJson": "Full run JSON",
     "exportDone": "Download started"
+  },
+  "usage": {
+    "title": "Usage",
+    "subtitle": "Token and cost totals from chat and experiment RAG runs.",
+    "tabOverview": "Overview",
+    "tabConversations": "By conversation",
+    "tabExperiments": "By experiment",
+    "total": "Total",
+    "chatScope": "Chat",
+    "experimentScope": "Experiments",
+    "runs": "RAG runs",
+    "evalRuns": "Eval runs",
+    "tokenIn": "Input tokens",
+    "tokenOut": "Output tokens",
+    "tokenCached": "Cached tokens",
+    "cost": "Cost (micros)",
+    "costFormulaTitle": "How cost is calculated",
+    "costFormula": "cost_micros = round(USD × 1_000_000), USD ≈ token_in × input_price + token_out × output_price",
+    "costFormulaNote": "Prices come from LiteLLM’s per-model price map (estimate, not an invoice). 1 micros = 10⁻⁶ USD. Cost is empty when the model has no price entry.",
+    "conversation": "Conversation",
+    "experiment": "Experiment",
+    "lastRun": "Last run",
+    "empty": "No usage yet. Run a chat turn or evaluation first.",
+    "emptyConversations": "No conversations with recorded usage.",
+    "emptyExperiments": "No experiments with recorded usage."
   }
 }

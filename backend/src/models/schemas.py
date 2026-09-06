@@ -479,3 +479,43 @@ class PromotionOut(BaseModel):
     variant_label: str | None = None
     query_pipeline_name: str | None = None
     created_at: datetime
+
+
+class UsageBucketOut(BaseModel):
+    run_count: int = 0
+    token_in: int = 0
+    token_out: int = 0
+    token_cached: int = 0
+    cost_micros: int | None = None
+
+
+class UsageSummaryOut(BaseModel):
+    total: UsageBucketOut
+    chat: UsageBucketOut
+    experiment: UsageBucketOut
+
+
+class ConversationUsageOut(BaseModel):
+    conversation_id: UUID
+    title: str | None
+    knowledge_base_id: UUID | None
+    pipeline_config_id: UUID | None
+    updated_at: datetime
+    run_count: int
+    token_in: int
+    token_out: int
+    token_cached: int
+    cost_micros: int | None
+    last_run_at: datetime | None
+
+
+class ExperimentUsageOut(BaseModel):
+    experiment_id: UUID
+    experiment_name: str
+    eval_run_count: int
+    run_count: int
+    token_in: int
+    token_out: int
+    token_cached: int
+    cost_micros: int | None
+    last_run_at: datetime | None

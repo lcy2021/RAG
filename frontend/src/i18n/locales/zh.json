@@ -6,7 +6,8 @@
     "kb": "知识库",
     "scenarios": "场景",
     "experiments": "实验",
-    "chat": "对话"
+    "chat": "对话",
+    "usage": "用量"
   },
   "layout": {
     "brand": "RAG Lab",
@@ -285,6 +286,7 @@
     "variant": "流水线",
     "composite": "综合分",
     "latencyP95": "时延 p95",
+    "costAvg": "成本均价 (micros)",
     "winner": "胜出",
     "tie": "平局",
     "chartsTitle": "图表",
@@ -292,11 +294,37 @@
     "chartMetrics": "分指标对比",
     "chartMetric": "{{metric}}",
     "chartLatency": "时延 p95（ms）",
+    "chartCost": "平均成本（micros）",
     "noChartData": "暂无汇总数据可画图",
     "export": "导出",
     "exportSummariesCsv": "汇总表 CSV",
     "exportScoresCsv": "逐题分数 CSV",
     "exportJson": "完整运行 JSON",
     "exportDone": "已开始下载"
+  },
+  "usage": {
+    "title": "用量",
+    "subtitle": "汇总对话与实验中的大模型 token 与成本。",
+    "tabOverview": "总览",
+    "tabConversations": "按对话",
+    "tabExperiments": "按实验",
+    "total": "总用量",
+    "chatScope": "对话用量",
+    "experimentScope": "实验用量",
+    "runs": "RAG 次数",
+    "evalRuns": "评测运行",
+    "tokenIn": "输入 token",
+    "tokenOut": "输出 token",
+    "tokenCached": "缓存 token",
+    "cost": "成本 (micros)",
+    "costFormulaTitle": "成本怎么算",
+    "costFormula": "cost_micros = round(USD × 1_000_000)，USD ≈ token_in × 输入单价 + token_out × 输出单价",
+    "costFormulaNote": "单价来自 LiteLLM 按模型价目表（估算，非账单实价）。1 micros = 10⁻⁶ USD。模型不在价目表时成本为空。",
+    "conversation": "对话",
+    "experiment": "实验",
+    "lastRun": "最近一次",
+    "empty": "暂无用量数据。跑一轮对话或评测后会出现。",
+    "emptyConversations": "还没有计入用量的对话。",
+    "emptyExperiments": "还没有计入用量的实验。"
   }
 }

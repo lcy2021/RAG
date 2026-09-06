@@ -246,14 +246,18 @@ class ExperimentRepository:
 
     async def list_eval_rag_latencies(self, eval_run_id: UUID) -> list[dict[str, Any]]:
         result = await self._session.execute(
-            select(RagRun.compare_variant_id, RagRun.latency_ms, RagRun.status).where(
-                RagRun.eval_run_id == eval_run_id
-            )
+            select(
+                RagRun.compare_variant_id,
+                RagRun.latency_ms,
+                RagRun.cost_micros,
+                RagRun.status,
+            ).where(RagRun.eval_run_id == eval_run_id)
         )
         return [
             {
                 "compare_variant_id": row.compare_variant_id,
                 "latency_ms": row.latency_ms,
+                "cost_micros": row.cost_micros,
                 "status": row.status.value if hasattr(row.status, "value") else row.status,
             }
             for row in result.all()

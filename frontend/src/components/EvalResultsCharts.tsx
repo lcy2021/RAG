@@ -160,6 +160,7 @@ export function EvalResultsCharts({ summaries, metricKeys, labels }: Props) {
 
   const compositeWinners = useMemo(() => winnerIdsForKey(rows, 'composite', 'max'), [rows])
   const latencyWinners = useMemo(() => winnerIdsForKey(rows, 'latencyP95', 'min'), [rows])
+  const costWinners = useMemo(() => winnerIdsForKey(rows, 'costAvg', 'min'), [rows])
   const metricWinners = useMemo(() => {
     const map = new Map<string, Set<string>>()
     for (const metric of metricKeys) {
@@ -219,6 +220,24 @@ export function EvalResultsCharts({ summaries, metricKeys, labels }: Props) {
         }
         formatLabel={(value) =>
           value == null || Number.isNaN(Number(value)) ? '—' : `${formatLatency(value)}ms`
+        }
+      />
+
+      <MetricBarChart
+        title={t('experiments.chartCost')}
+        dataKey="costAvg"
+        rows={rows}
+        winnerIds={costWinners}
+        winnerLabel={winnerTag}
+        tieLabel={tieTag}
+        yUnit="µ$"
+        defaultFill={LATENCY_FILL}
+        formatValue={formatLatency}
+        formatTooltip={(value) =>
+          value == null || Number.isNaN(Number(value)) ? '—' : `${formatLatency(value)} micros`
+        }
+        formatLabel={(value) =>
+          value == null || Number.isNaN(Number(value)) ? '—' : `${formatLatency(value)}`
         }
       />
     </div>

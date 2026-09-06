@@ -154,6 +154,10 @@ class ChatRepository:
         rewritten_query: str | None,
         error_message: str | None,
         latency_ms: int | None,
+        token_in: int | None = None,
+        token_out: int | None = None,
+        token_cached: int | None = None,
+        cost_micros: int | None = None,
     ) -> None:
         run = await self._session.get(RagRun, run_id)
         if run is None:
@@ -163,6 +167,10 @@ class ChatRepository:
         run.rewritten_query = rewritten_query
         run.error_message = error_message
         run.latency_ms = latency_ms
+        run.token_in = token_in
+        run.token_out = token_out
+        run.token_cached = token_cached
+        run.cost_micros = cost_micros
         run.finished_at = datetime.now(UTC)
         await self._session.flush()
 

@@ -416,3 +416,43 @@ export type Promotion = {
   query_pipeline_name: string | null
   created_at: string
 }
+
+export type UsageBucket = {
+  run_count: number
+  token_in: number
+  token_out: number
+  token_cached: number
+  cost_micros: number | null
+}
+
+export type UsageSummary = {
+  total: UsageBucket
+  chat: UsageBucket
+  experiment: UsageBucket
+}
+
+export type ConversationUsage = {
+  conversation_id: string
+  title: string | null
+  knowledge_base_id: string | null
+  pipeline_config_id: string | null
+  updated_at: string
+  run_count: number
+  token_in: number
+  token_out: number
+  token_cached: number
+  cost_micros: number | null
+  last_run_at: string | null
+}
+
+export type ExperimentUsage = {
+  experiment_id: string
+  experiment_name: string
+  eval_run_count: number
+  run_count: number
+  token_in: number
+  token_out: number
+  token_cached: number
+  cost_micros: number | null
+  last_run_at: string | null
+}

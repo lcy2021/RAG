@@ -1,6 +1,7 @@
 import {
   ApiOutlined,
   AppstoreOutlined,
+  BarChartOutlined,
   CommentOutlined,
   DatabaseOutlined,
   ExperimentOutlined,
@@ -27,6 +28,7 @@ const ICONS: Record<string, ReactNode> = {
   '/scenarios': <ThunderboltOutlined />,
   '/experiments': <ExperimentOutlined />,
   '/chat': <CommentOutlined />,
+  '/usage': <BarChartOutlined />,
 }
 
 const NAV_LABEL_KEYS: Record<string, string> = {
@@ -37,6 +39,7 @@ const NAV_LABEL_KEYS: Record<string, string> = {
   '/scenarios': 'nav.scenarios',
   '/experiments': 'nav.experiments',
   '/chat': 'nav.chat',
+  '/usage': 'nav.usage',
 }
 
 export function AppLayout() {

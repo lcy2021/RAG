@@ -19,6 +19,7 @@ import { PluginsPage } from './pages/PluginsPage'
 import { ScenarioCreatePage } from './pages/ScenarioCreatePage'
 import { ScenarioDetailPage } from './pages/ScenarioDetailPage'
 import { ScenariosPage } from './pages/ScenariosPage'
+import { UsagePage } from './pages/UsagePage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -60,6 +61,7 @@ export default function App() {
                 <Route path="/experiments" element={<ExperimentsPage />} />
                 <Route path="/experiments/new" element={<ExperimentCreatePage />} />
                 <Route path="/experiments/:id" element={<ExperimentDetailPage />} />
+                <Route path="/usage" element={<UsagePage />} />
               </Route>
             </Routes>
           </BrowserRouter>

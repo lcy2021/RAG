@@ -15,6 +15,7 @@ from services.pipelines import PipelineService
 from services.plugins import PluginCatalogService
 from services.scenarios import ScenarioService
 from services.settings import SettingsService
+from services.usage import UsageService
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 OptionalSessionDep = Annotated[AsyncSession | None, Depends(get_optional_session)]
@@ -57,3 +58,7 @@ def scenario_service_dep(session: SessionDep) -> ScenarioService:
 
 def experiment_service_dep(session: SessionDep, settings: SettingsDep) -> ExperimentService:
     return ExperimentService(session, settings)
+
+
+def usage_service_dep(session: SessionDep) -> UsageService:
+    return UsageService(session)

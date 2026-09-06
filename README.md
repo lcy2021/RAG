@@ -98,6 +98,7 @@ def apply(registry):
 5. **场景** — 绑定知识库；选评测指标（`recall_at_k` / `mrr` / `faithfulness`）；添加评测题与文档原文依据（字符 span）。
 6. **实验** — 绑定场景与至少两条已有查询流水线；后台排队离线跑评；按加权指标排序；可**晋级**胜出流水线为知识库默认。
 7. **对话** — 默认选中第一个知识库与第一条查询流水线；多轮问答（SSE：`progress` 阶段进度 + 流式回答）；进度区可展开查看各阶段完整结果（改写句、段落正文与分数）；每条助手回答底部展示最终引用来源。
+8. **用量** — 总览对话/实验的 token 与成本；可按对话、按实验下钻。
 
 换插件即换配方，同一套页面与存储。自定义插件：在 `backend/src/plugins/custom/` 直接改代码。
 
@@ -264,6 +265,7 @@ Builtins use the same API. Custom: edit `backend/src/plugins/custom/` in place; 
 5. **Scenarios** — Bind a KB; pick metrics (`recall_at_k` / `mrr` / `faithfulness`); add gold questions and document evidence quotes (char spans).
 6. **Experiments** — Bind a scenario to two or more existing query pipelines; queue **one offline eval job per pipeline** (parallel, with per-pipeline progress); rank by weighted metrics; **promote** the winner as the KB default query pipeline.
 7. **Chat** — Defaults to first KB and first query pipeline; multi-turn Q&A (SSE: `progress` + streamed answer); expand progress for full stage outputs; citations under each assistant reply.
+8. **Usage** — Totals for chat/experiment tokens and cost; drill down by conversation or experiment.
 
 Swap plugins to swap recipes—same UI and storage. Custom plugins: edit `backend/src/plugins/custom/` in place.
 

@@ -1,8 +1,17 @@
 import { DeleteOutlined, PlusOutlined, SendOutlined } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button, Collapse, Empty, Popconfirm, Select, Spin, Tabs, Tag, Typography } from 'antd'
-import { Fragment, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react'
 import { useTranslation } from 'react-i18next'
+import { useSearchParams } from 'react-router-dom'
 
 import {
   queryKeys,
@@ -45,11 +54,14 @@ type ProgressEntry = {
 
 const CITE_SPLIT_RE = /(\[\d+\])/g
 const CITE_MARK_RE = /^\[(\d+)\]$/
+const EMPTY_MESSAGES: ChatMessage[] = []
 
 export function ChatPage() {
   const { t } = useTranslation()
   const message = useMessage()
   const queryClient = useQueryClient()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const requestedConversationId = searchParams.get('c')
   const kbs = useKnowledgeBases()
   const pipelines = usePipelines()
   const conversations = useConversations()
@@ -81,7 +93,7 @@ export function ChatPage() {
   )
   const resolvedPipelineId = pipelineId ?? pipelineOptions[0]?.value
   const canReuse = conversationMatchesContext(conversation, resolvedKbId, resolvedPipelineId)
-  const stored = messages.data ?? []
+  const stored = messages.data ?? EMPTY_MESSAGES
   const busy = create.isPending || send.isPending
   const sessions = conversations.data ?? []
 
@@ -109,15 +121,17 @@ export function ChatPage() {
   )
 
   const scrollToBottom = () => {
-    requestAnimationFrame(() => {
-      const node = listRef.current
-      if (node) {
-        node.scrollTop = node.scrollHeight
-      }
-    })
+    const node = listRef.current
+    if (node) {
+      node.scrollTop = node.scrollHeight
+    }
   }
 
-  const openSession = (session: Conversation) => {
+  /** Apply local session state only — do not touch the URL here. */
+  const applySession = (session: Conversation) => {
+    if (session.id === conversationId) {
+      return
+    }
     setConversation(session)
     setConversationId(session.id)
     setKbId(session.knowledge_base_id ?? undefined)
@@ -128,6 +142,15 @@ export function ChatPage() {
     setProgressLog([])
   }
 
+  /** Sidebar / in-app navigation: URL is the single source of truth. */
+  const selectSession = (session: Conversation) => {
+    if (session.id === conversationId && session.id === requestedConversationId) {
+      scrollToBottom()
+      return
+    }
+    setSearchParams({ c: session.id }, { replace: true })
+  }
+
   const resetThread = () => {
     setConversationId(null)
     setConversation(null)
@@ -135,7 +158,39 @@ export function ChatPage() {
     setSourcesByRun({})
     setStreamDraft(null)
     setProgressLog([])
+    setSearchParams({}, { replace: true })
   }
+
+  // Sync ?c= → local state once (avoids click + URL effect both opening the same session).
+  useEffect(() => {
+    if (!requestedConversationId || !sessions.length) {
+      return
+    }
+    if (conversationId === requestedConversationId) {
+      return
+    }
+    const target = sessions.find((item) => item.id === requestedConversationId)
+    if (target) {
+      applySession(target)
+    }
+  }, [requestedConversationId, sessions, conversationId])
+
+  // Lifecycle: after this conversation's messages are in the DOM, pin scrollbar to bottom.
+  useLayoutEffect(() => {
+    if (!conversationId || messages.isPending || transcript.length === 0) {
+      return
+    }
+    scrollToBottom()
+  }, [conversationId, messages.isPending, messages.dataUpdatedAt, transcript.length])
+
+  useEffect(() => {
+    if (!conversationId || messages.isPending || transcript.length === 0) {
+      return
+    }
+    scrollToBottom()
+    const id = window.requestAnimationFrame(() => scrollToBottom())
+    return () => window.cancelAnimationFrame(id)
+  }, [conversationId, messages.isPending, messages.dataUpdatedAt, transcript.length])
 
   const deleteSession = async (session: Conversation) => {
     try {
@@ -199,6 +254,7 @@ export function ChatPage() {
         })
         setConversation(active)
         setConversationId(active.id)
+        setSearchParams({ c: active.id }, { replace: true })
         setTracesByRun({})
         setSourcesByRun({})
       }
@@ -284,7 +340,7 @@ export function ChatPage() {
                   <button
                     type="button"
                     className="chat-session-item-main"
-                    onClick={() => openSession(item)}
+                    onClick={() => selectSession(item)}
                   >
                     <span className="chat-session-item-title">{sessionLabel(item)}</span>
                     <span className="chat-session-item-meta">
@@ -846,11 +902,20 @@ function ChatBubble({
   streaming?: boolean
 }) {
   const { t } = useTranslation()
+  const rowRef = useRef<HTMLDivElement>(null)
+  const [inView, setInView] = useState(streaming)
   const isUser = message.role === 'user'
   // Keep a stable key while streaming (rag_run_id arrives mid-turn); isolate by run once persisted.
   const runKey = streaming ? message.id : (message.rag_run_id ?? message.id)
+  const hasLocalDetails = Boolean(cachedSources && traces) || Boolean(progress?.length)
+  // Only fetch run details for bubbles near the viewport — long threads used to
+  // fire one request per assistant turn on open and freeze session switching.
   const needsFetch =
-    !isUser && !streaming && Boolean(message.rag_run_id) && !(cachedSources && traces)
+    inView &&
+    !isUser &&
+    !streaming &&
+    Boolean(message.rag_run_id) &&
+    !hasLocalDetails
   const remote = useRunSources(
     needsFetch ? conversationId : null,
     needsFetch ? message.rag_run_id : null,
@@ -869,6 +934,27 @@ function ChatBubble({
     }
     return tracesToProgress(resolved, runKey)
   }, [progress, streaming, traces, remote.data?.traces, runKey])
+
+  useEffect(() => {
+    if (streaming || isUser || hasLocalDetails || inView) {
+      return
+    }
+    const node = rowRef.current
+    if (!node) {
+      return
+    }
+    const root = node.closest('.chat-transcript')
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setInView(true)
+        }
+      },
+      { root: root instanceof Element ? root : null, rootMargin: '160px 0px', threshold: 0 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [streaming, isUser, hasLocalDetails, inView])
 
   const collapseItems = []
   if (!isUser && !streaming && sources.length > 0) {
@@ -903,7 +989,7 @@ function ChatBubble({
   }
 
   return (
-    <div className={`chat-bubble-row ${isUser ? 'is-user' : 'is-assistant'}`}>
+    <div ref={rowRef} className={`chat-bubble-row ${isUser ? 'is-user' : 'is-assistant'}`}>
       <div className="chat-bubble">
         <div className="chat-bubble-role">{isUser ? t('chat.you') : t('chat.assistant')}</div>
         {!isUser ? (

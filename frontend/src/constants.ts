@@ -53,6 +53,7 @@ export const NAV_ITEMS = [
   { key: '/scenarios' },
   { key: '/experiments' },
   { key: '/chat' },
+  { key: '/usage' },
 ] as const
 
 export function stagesForKind(kind: PipelineKind): readonly string[] {

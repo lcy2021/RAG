@@ -259,6 +259,7 @@ class ChatService:
             )
             answer = result.get("answer") or ""
             latency = int((time.perf_counter() - started) * 1000)
+            usage = ctx.usage.persist_fields()
             await self._chat.finish_rag_run(
                 run["id"],
                 status="succeeded",
@@ -266,6 +267,7 @@ class ChatService:
                 rewritten_query=result.get("rewritten_query"),
                 error_message=None,
                 latency_ms=latency,
+                **usage,
             )
             retrieved = list(result.get("retrieved") or [])
             sources_payload = normalize_sources(retrieved, answer=answer)
@@ -302,6 +304,7 @@ class ChatService:
             source_rows = [RetrievedSourceOut.model_validate(item) for item in sources_payload]
         except Exception as exc:
             latency = int((time.perf_counter() - started) * 1000)
+            usage = ctx.usage.persist_fields()
             await self._chat.finish_rag_run(
                 run["id"],
                 status="failed",
@@ -309,6 +312,7 @@ class ChatService:
                 rewritten_query=None,
                 error_message=str(exc),
                 latency_ms=latency,
+                **usage,
             )
             for span in ctx.trace.spans:
                 await self._chat.insert_stage_trace(

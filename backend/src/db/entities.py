@@ -331,25 +331,6 @@ class ChunkEmbedding(Base):
     created_at: Mapped[datetime] = _created()
 
 
-class SparseIndexRef(Base):
-    __tablename__ = "sparse_index_refs"
-    __table_args__ = (
-        UniqueConstraint(
-            "knowledge_base_id", "indexer_plugin", "collection_name", name="uq_sparse_index_refs"
-        ),
-    )
-
-    id: Mapped[UUID] = _uuid()
-    knowledge_base_id: Mapped[UUID] = mapped_column(
-        UUID_PK, ForeignKey("knowledge_bases.id", ondelete="CASCADE"), nullable=False
-    )
-    indexer_plugin: Mapped[str] = mapped_column(Text, nullable=False)
-    collection_name: Mapped[str] = mapped_column(Text, nullable=False)
-    extra_metadata: Mapped[dict[str, Any]] = mapped_column(
-        "metadata", JSONB, nullable=False, server_default=text("'{}'::jsonb")
-    )
-
-
 class IngestJob(Base):
     __tablename__ = "ingest_jobs"
     __table_args__ = (Index("ingest_jobs_kb_status_idx", "knowledge_base_id", "status"),)
@@ -503,66 +484,6 @@ class Message(Base):
     created_at: Mapped[datetime] = _created()
 
 
-class ConversationMemory(Base):
-    __tablename__ = "conversation_memories"
-    __table_args__ = (
-        Index("conversation_memories_latest_idx", "conversation_id", "valid_from_turn"),
-    )
-
-    id: Mapped[UUID] = _uuid()
-    conversation_id: Mapped[UUID] = mapped_column(
-        UUID_PK, ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False
-    )
-    summary: Mapped[str] = mapped_column(Text, nullable=False)
-    valid_from_turn: Mapped[int] = mapped_column(Integer, nullable=False)
-    source_message_id: Mapped[UUID | None] = mapped_column(
-        UUID_PK, ForeignKey("messages.id", ondelete="SET NULL")
-    )
-    created_at: Mapped[datetime] = _created()
-
-
-class MessageEmbedding(Base):
-    __tablename__ = "message_embeddings"
-    __table_args__ = (
-        UniqueConstraint("message_id", "embedder_plugin", name="uq_message_embeddings"),
-        CheckConstraint("vector_dims(embedding) = dim", name="message_embeddings_dim"),
-    )
-
-    id: Mapped[UUID] = _uuid()
-    message_id: Mapped[UUID] = mapped_column(
-        UUID_PK, ForeignKey("messages.id", ondelete="CASCADE"), nullable=False
-    )
-    embedder_plugin: Mapped[str] = mapped_column(Text, nullable=False)
-    embedding: Mapped[list[float]] = mapped_column(Vector(), nullable=False)
-    dim: Mapped[int] = mapped_column(Integer, nullable=False)
-
-
-class CompareGroup(Base):
-    __tablename__ = "compare_groups"
-
-    id: Mapped[UUID] = _uuid()
-    compare_spec_id: Mapped[UUID] = mapped_column(
-        UUID_PK, ForeignKey("compare_specs.id"), nullable=False
-    )
-    conversation_id: Mapped[UUID] = mapped_column(
-        UUID_PK, ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False
-    )
-    trigger_message_id: Mapped[UUID] = mapped_column(
-        UUID_PK, ForeignKey("messages.id", ondelete="CASCADE"), nullable=False
-    )
-    label: Mapped[str | None] = mapped_column(Text)
-    selected_run_id: Mapped[UUID | None] = mapped_column(
-        UUID_PK,
-        ForeignKey(
-            "rag_runs.id",
-            use_alter=True,
-            name="compare_groups_selected_run_fk",
-            ondelete="SET NULL",
-        ),
-    )
-    created_at: Mapped[datetime] = _created()
-
-
 class RagRun(Base):
     __tablename__ = "rag_runs"
     __table_args__ = (
@@ -587,9 +508,6 @@ class RagRun(Base):
     )
     trigger_message_id: Mapped[UUID | None] = mapped_column(
         UUID_PK, ForeignKey("messages.id", ondelete="CASCADE")
-    )
-    compare_group_id: Mapped[UUID | None] = mapped_column(
-        UUID_PK, ForeignKey("compare_groups.id", ondelete="SET NULL")
     )
     compare_variant_id: Mapped[UUID | None] = mapped_column(
         UUID_PK, ForeignKey("compare_variants.id", ondelete="SET NULL")
@@ -629,6 +547,7 @@ class RagRun(Base):
     latency_ms: Mapped[int | None] = mapped_column(Integer)
     token_in: Mapped[int | None] = mapped_column(Integer)
     token_out: Mapped[int | None] = mapped_column(Integer)
+    token_cached: Mapped[int | None] = mapped_column(Integer)
     cost_micros: Mapped[int | None] = mapped_column(BigInteger)
     created_at: Mapped[datetime] = _created()
     finished_at: Mapped[datetime | None] = mapped_column(TS)

@@ -27,6 +27,7 @@ RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、�
 | 场景 | 评测题（问题、参考答案、原文依据）、指标与权重 |
 | 对比实验 | 选场景；多选已有查询流水线；并行跑评；分数表；晋级 |
 | 对话 | 选知识库与查询流水线；多轮问答；助手气泡内展开阶段结果与 Sources |
+| 用量 | 总览 / 按对话 / 按实验查看 token 与成本 |
 
 表单字段来自插件 JSON Schema；插件通过 `binding_id` 引用凭证。
 
@@ -40,7 +41,7 @@ RAG Lab 是浏览器里操作的插件化 RAG 实验台：凭证、流水线、�
 
 ### 实现状态
 
-凭证 / 插件 / 流水线 / 知识库 / 场景 / 实验（多流水线并行评测 + 晋级）/ 对话（SSE）已落地。入库侧换 embedding/切块通过新建 collection 再 ingest。
+凭证 / 插件 / 流水线 / 知识库 / 场景 / 实验（多流水线并行评测 + 晋级）/ 对话（SSE）/ 用量已落地。入库侧换 embedding/切块通过新建 collection 再 ingest。
 
 ---
 
@@ -67,6 +68,7 @@ Capabilities: full ingest + query plugins; compare via multiple complete query p
 | Scenarios | Gold questions + document evidence spans, metrics, weights |
 | Compare lab | Pick scenario; select multiple existing query pipelines; run; score table; promote |
 | Chat | Pick KB + query pipeline; multi-turn; expand stage results and Sources on assistant turns |
+| Usage | Totals + by conversation + by experiment (tokens / cost) |
 
 JSON Schema drives forms; plugins reference credentials with `binding_id`.
 
@@ -80,4 +82,4 @@ A scenario is KB + gold set + metrics. Labels are document character spans. `eva
 
 ### Status
 
-Credentials / plugins / pipelines / KB / scenarios / experiments (parallel multi-pipeline eval + promote) / chat (SSE) are shipped. Ingest-side embedder/chunker swaps use a new collection and reingest.
+Credentials / plugins / pipelines / KB / scenarios / experiments (parallel multi-pipeline eval + promote) / chat (SSE) / usage are shipped. Ingest-side embedder/chunker swaps use a new collection and reingest.

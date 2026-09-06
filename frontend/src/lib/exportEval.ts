@@ -45,6 +45,7 @@ export function exportSummariesCsv(
     ...metricKeys,
     'latency_p50_ms',
     'latency_p95_ms',
+    'cost_micros_avg',
   ]
   const lines = [header.join(',')]
   const rows = [...run.summaries].sort((a, b) => (a.rank ?? 999) - (b.rank ?? 999))
@@ -59,6 +60,7 @@ export function exportSummariesCsv(
         ...metricKeys.map((metric) => row.metrics?.[metric] ?? ''),
         row.latency_p50_ms,
         row.latency_p95_ms,
+        row.cost_micros_avg,
       ]
         .map(csvEscape)
         .join(','),
@@ -132,6 +134,7 @@ export type ChartRow = {
   variantId: string
   composite: number | null
   latencyP95: number | null
+  costAvg: number | null
   isWinner: boolean
   [metric: string]: string | number | boolean | null
 }
@@ -149,6 +152,7 @@ export function buildChartRows(
         variantId: row.compare_variant_id,
         composite: row.composite_score,
         latencyP95: row.latency_p95_ms,
+        costAvg: row.cost_micros_avg,
         isWinner: row.is_winner,
       }
       for (const metric of metricKeys) {

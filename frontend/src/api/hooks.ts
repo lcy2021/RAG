@@ -33,6 +33,9 @@ import type {
   ScenarioDetail,
   ScenarioItemsImportResult,
   ScenarioUpdate,
+  UsageSummary,
+  ConversationUsage,
+  ExperimentUsage,
 } from './types'
 
 export const queryKeys = {
@@ -55,6 +58,9 @@ export const queryKeys = {
   messages: (id: string) => ['conversations', id, 'messages'] as const,
   runSources: (conversationId: string, ragRunId: string) =>
     ['conversations', conversationId, 'rag-runs', ragRunId, 'sources'] as const,
+  usageSummary: ['usage', 'summary'] as const,
+  usageConversations: ['usage', 'conversations'] as const,
+  usageExperiments: ['usage', 'experiments'] as const,
 }
 
 export function useHealth() {
@@ -308,6 +314,8 @@ export function useSendMessage() {
     onSuccess: (_turn, vars) => {
       client.invalidateQueries({ queryKey: queryKeys.messages(vars.conversationId) })
       client.invalidateQueries({ queryKey: queryKeys.conversations })
+      client.invalidateQueries({ queryKey: queryKeys.usageSummary })
+      client.invalidateQueries({ queryKey: queryKeys.usageConversations })
     },
   })
 }
@@ -478,6 +486,8 @@ export function useStartExperimentRun(experimentId: string) {
       client.invalidateQueries({ queryKey: queryKeys.experimentRuns(experimentId) })
       client.invalidateQueries({ queryKey: queryKeys.experiment(experimentId) })
       client.invalidateQueries({ queryKey: queryKeys.experiments })
+      client.invalidateQueries({ queryKey: queryKeys.usageSummary })
+      client.invalidateQueries({ queryKey: queryKeys.usageExperiments })
       client.setQueryData(queryKeys.experimentRun(experimentId, run.id), run)
     },
   })
@@ -501,5 +511,26 @@ export function usePromoteExperimentRun(experimentId: string) {
       client.invalidateQueries({ queryKey: queryKeys.pipelines })
       client.invalidateQueries({ queryKey: queryKeys.knowledgeBases })
     },
+  })
+}
+
+export function useUsageSummary() {
+  return useQuery({
+    queryKey: queryKeys.usageSummary,
+    queryFn: () => apiGet<UsageSummary>('/usage/summary'),
+  })
+}
+
+export function useConversationUsage() {
+  return useQuery({
+    queryKey: queryKeys.usageConversations,
+    queryFn: () => apiGet<ConversationUsage[]>('/usage/conversations'),
+  })
+}
+
+export function useExperimentUsage() {
+  return useQuery({
+    queryKey: queryKeys.usageExperiments,
+    queryFn: () => apiGet<ExperimentUsage[]>('/usage/experiments'),
   })
 }
