@@ -17,6 +17,7 @@ htmlcov/
 backend/.env
 data/
 uploads/
+scripts/
 *.log
 
 node_modules/
