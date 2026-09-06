@@ -7,11 +7,11 @@
 
 ## 中文
 
-实验室的操作面是浏览器。API 只给页面用；`lab.yml` 对应「导入配置」对话框。
+实验室的操作面是浏览器。API 给页面使用；`lab.yml` 对应「导入配置」对话框。
 
-实现：`frontend/`，Vite + React + TypeScript。选用 **Ant Design**，因为操作台以布局、表格、表单、上传、JSON Schema 槽位为主；自写 CSS 会拖慢 M1–M5。界面文案用 **i18next**（中/英，顶栏切换，写入 `localStorage`）。开发时 Vite 代理 `/api` → FastAPI（`localhost:6660`）。
+实现：`frontend/`，Vite + React + TypeScript。选用 **Ant Design**（布局、表格、表单、上传、JSON Schema 槽位）。界面文案用 **i18next**（中/英，顶栏切换，写入 `localStorage`）。开发时 Vite 代理 `/api` → FastAPI（`localhost:6660`）。
 
-M1 已实现 `/settings`、`/plugins`、`/pipelines`、`/kb`、`/chat`。M3 已落地 `/scenarios` 与 `/experiments`（对比构建器 / 后台跑评 / 结果表 / 晋级）。自定义插件 `.py` 上传仍为 M5。
+已实现：`/settings`、`/plugins`、`/pipelines`、`/kb`、`/scenarios`、`/experiments`、`/chat`。
 
 ### 信息架构
 
@@ -19,7 +19,7 @@ M1 已实现 `/settings`、`/plugins`、`/pipelines`、`/kb`、`/chat`。M3 已�
 设置
   向量 / LLM 凭证
 插件中心
-  内置 / 已上传 / 上传 .py
+  内置目录（自定义插件经 RAGLAB_CUSTOM_PLUGIN_DIR）
 流水线
   入库流水线 / 查询流水线（槽位编辑器）
 知识库
@@ -36,15 +36,14 @@ M1 已实现 `/settings`、`/plugins`、`/pipelines`、`/kb`、`/chat`。M3 已�
 
 - **槽位编辑器**：按 stage 下拉已注册插件；右侧根据 `config_schema` 渲染表单；保存为 `pipeline_slots.bindings`。
 - **对比构建器**：多选已有查询流水线；每条流水线作为一个对比臂。运行后按流水线入队并展示进度，结束后跳转结果表（流水线 × 指标），点开看 traces。
-- **晋级**：结果页按钮把胜出流水线设为知识库默认查询流水线（无覆盖时复用原流水线），并记录 `pipeline_promotions`；对话页仍可再选流水线。
-- **自定义插件**：上传单个 `.py`（`define_stage` + `apply`），服务端加载并 upsert `plugins`；出现在下拉框。失败时页面展示 schema/注册错误。
+- **晋级**：结果页按钮把胜出流水线设为知识库默认查询流水线，并记录 `pipeline_promotions`；对话页可再选流水线。
 
-### 路由（建议）
+### 路由
 
 | 路径 | 页面 |
 |---|---|
 | `/settings` | 凭证（向量 / LLM） |
-| `/plugins` | 目录与上传 |
+| `/plugins` | 插件目录 |
 | `/pipelines` | 流水线编辑 |
 | `/kb` | 知识库与文档 |
 | `/scenarios` | 场景与评测题 |
@@ -57,23 +56,22 @@ M1 已实现 `/settings`、`/plugins`、`/pipelines`、`/kb`、`/chat`。M3 已�
 
 <a id="english"></a>
 
-The operator surface is the browser. APIs exist for the UI. `lab.yml` maps to an “Import config” dialog.
+The operator surface is the browser. APIs serve the UI. `lab.yml` maps to an “Import config” dialog.
 
 Implementation: `frontend/` with Vite + React + TypeScript. **Ant Design** covers the lab console (layout, tables, forms, upload, JSON Schema slots). Copy is **i18next**-driven (zh/en, header switch, persisted in `localStorage`). Vite proxies `/api` to FastAPI on port 6660.
 
-M1 ships `/settings`, `/plugins`, `/pipelines`, `/kb`, `/chat`. M3 ships `/scenarios` and `/experiments` (compare builder / background eval / results / promote). Custom `.py` upload remains M5.
+Shipped routes: `/settings`, `/plugins`, `/pipelines`, `/kb`, `/scenarios`, `/experiments`, `/chat`.
 
 ### Information architecture
 
-Settings (vector/LLM credentials) → Plugin hub (builtin / uploaded / upload `.py`) → Pipelines (ingest / query slot editor) → Knowledge bases (upload, jobs, collections) → Scenarios (items, spans, weights) → Experiments (compare builder, runs, traces, promote) → Chat (composer with KB + query pipeline selectors; expandable stage timeline with full passage results; final Sources under the answer).
+Settings (vector/LLM credentials) → Plugin hub (builtin catalog; custom plugins via `RAGLAB_CUSTOM_PLUGIN_DIR`) → Pipelines (ingest / query slot editor) → Knowledge bases (upload, jobs, collections) → Scenarios (items, spans, weights) → Experiments (compare builder, runs, traces, promote) → Chat (composer with KB + query pipeline selectors; expandable stage timeline with full passage results; final Sources under the answer).
 
 ### Key interactions
 
 - **Slot editor:** stage dropdown of registered plugins; JSON Schema form on the right; save as `pipeline_slots.bindings`.
 - **Compare builder:** multi-select existing query pipelines; each pipeline is one compare arm. After start, each pipeline is queued with live progress; then a pipeline × metric table with drill-in traces.
-- **Promote:** sets the KB default query pipeline to the winner (reuses the pipeline when compared as-is); pick the query pipeline in Chat.
-- **Custom plugin:** upload one `.py` (`define_stage` + `apply`); server registers and upserts `plugins`; it appears in dropdowns. Show register/schema errors in the page.
+- **Promote:** sets the KB default query pipeline to the winner; pick the query pipeline in Chat.
 
-### Suggested routes
+### Routes
 
 `/settings`, `/plugins`, `/pipelines`, `/kb`, `/scenarios`, `/experiments`, `/chat`.

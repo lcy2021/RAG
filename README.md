@@ -30,7 +30,7 @@ RAG Lab 把链路拆成**可插拔阶段**：宿主只负责按槽位调度；�
 | 换生成模型 | Settings 里换 LLM 凭证；生成插件只拿 `binding_id` |
 | 加自己的 HyDE | 写一个 `query_transformer` 插件，`apply(registry)` 注册 |
 
-插件**不接触明文密钥**：`ctx` 按 `binding_id` 解析凭证与密钥，经 **LiteLLM** 调用模型；traces 记阶段与输出，不记 key。
+插件通过 `binding_id` 使用凭证：`ctx` 解析后经 **LiteLLM** 调用模型；traces 记录阶段与输出。
 
 ### 插件契约（和 Harness 同构）
 
@@ -62,7 +62,7 @@ plugin = define_stage(
 
 @plugin.run
 async def run(data, params, ctx):
-    # 用 ctx.embed_texts / ctx.chat_complete；禁止 params["api_key"]
+    # Use ctx.embed_texts / ctx.chat_complete with binding_id
     return data
 
 
@@ -83,7 +83,7 @@ def apply(registry):
 | query_transformer | `passthrough`, `rewrite`, `hyde`, `multi_query` |
 | retriever | `dense`, `bm25` |
 | fusion | `rrf` |
-| reranker | `none`, `bge-reranker`（LLM 占位；真 Cross-Encoder 请自定义插件） |
+| reranker | `none`, `bge-reranker` |
 | grader | `crag` |
 | compressor | `none`, `top_n` |
 | generator | `chat` |
@@ -91,15 +91,15 @@ def apply(registry):
 
 ### 页面怎么配一条可插拔流水线
 
-1. **设置** — 登记向量 / LLM 凭证（密钥入库；列表只显示 key_hint；无单独 rerank 类型）。
-2. **插件中心** — 看各阶段有哪些实现（`description` + schema 字段）。真 `bge-reranker-v2-m3` 等需自行开发插件。
+1. **设置** — 登记向量 / LLM 凭证（密钥入库；列表显示 `key_hint`）。
+2. **插件中心** — 浏览各阶段实现（`description` + schema 字段）。
 3. **流水线** — 入库 / 查询槽位图：每阶段选插件、填参数；检索可多路 ensemble。
-4. **知识库** — 建库、上传文档（文本 / Office / PDF / 图片）；默认 `auto` loader 按策略抽正文后 ingest 进 pgvector；可删除单篇文档或整个知识库（删除知识库先软删立刻从列表消失，向量与文件在后台清理；对话历史保留）。
-5. **场景** — 绑定知识库；选评测指标（`recall_at_k` / `mrr` / `faithfulness`）；添加评测题与文档原文依据（字符 span，不是切块 ID）。
+4. **知识库** — 建库、上传文档（文本 / Office / PDF / 图片）；默认 `auto` loader 按策略抽正文后 ingest 进 pgvector；可删除单篇文档或整个知识库（软删后列表立即更新，向量与文件后台清理；对话历史保留）。
+5. **场景** — 绑定知识库；选评测指标（`recall_at_k` / `mrr` / `faithfulness`）；添加评测题与文档原文依据（字符 span）。
 6. **实验** — 绑定场景与至少两条已有查询流水线；后台排队离线跑评；按加权指标排序；可**晋级**胜出流水线为知识库默认。
 7. **对话** — 默认选中第一个知识库与第一条查询流水线；多轮问答（SSE：`progress` 阶段进度 + 流式回答）；进度区可展开查看各阶段完整结果（改写句、段落正文与分数）；每条助手回答底部展示最终引用来源。
 
-换插件即换配方，同一套页面与存储。**场景**、**实验**（多流水线对比 / 后台跑评 / 结果表 / 晋级）已落地；自定义插件上传仍为后续步骤。
+换插件即换配方，同一套页面与存储。自定义插件：将带 `apply` 的 `.py` 放入 `RAGLAB_CUSTOM_PLUGIN_DIR`。
 
 ### 技术栈
 
@@ -196,7 +196,7 @@ query:   query_transformer  →  retriever(s)  →  fusion  →  reranker  →  
 | Generation model | New LLM credential in Settings; generator only gets `binding_id` |
 | Custom HyDE | One `query_transformer` plugin + `apply(registry)` |
 
-Plugins **never see plaintext secrets**: `ctx` resolves credentials by `binding_id` and calls models via **LiteLLM**; traces record stages and outputs, not keys.
+Plugins use credentials via `binding_id`: `ctx` resolves them and calls models through **LiteLLM**; traces record stages and outputs.
 
 ### Plugin contract (Harness-aligned)
 
@@ -228,7 +228,7 @@ plugin = define_stage(
 
 @plugin.run
 async def run(data, params, ctx):
-    # Use ctx.embed_texts / ctx.chat_complete; never params["api_key"]
+    # Use ctx.embed_texts / ctx.chat_complete with binding_id
     return data
 
 
@@ -249,7 +249,7 @@ Builtins use the same API. Custom: drop a `.py` with `apply` into `RAGLAB_CUSTOM
 | query_transformer | `passthrough`, `rewrite`, `hyde`, `multi_query` |
 | retriever | `dense`, `bm25` |
 | fusion | `rrf` |
-| reranker | `none`, `bge-reranker` (LLM placeholder; real Cross-Encoder via custom plugin) |
+| reranker | `none`, `bge-reranker` |
 | grader | `crag` |
 | compressor | `none`, `top_n` |
 | generator | `chat` |
@@ -257,15 +257,15 @@ Builtins use the same API. Custom: drop a `.py` with `apply` into `RAGLAB_CUSTOM
 
 ### Console: configure a pluggable pipeline
 
-1. **Settings** — Register embedding / LLM credentials (secrets stored; list shows `key_hint` only; no separate rerank type).
-2. **Plugins** — Browse implementations per stage (`description` + schema fields). Real `bge-reranker-v2-m3` etc. need a custom plugin.
+1. **Settings** — Register embedding / LLM credentials (secrets stored; list shows `key_hint`).
+2. **Plugins** — Browse implementations per stage (`description` + schema fields).
 3. **Pipelines** — Ingest / query slot map: pick plugin and params per stage; retrieval supports multi-path ensemble.
-4. **Knowledge bases** — Create KB, upload docs (text / Office / PDF / images); default `auto` loader extracts text then ingests to pgvector; delete single docs or whole KBs (KB delete soft-hides immediately, vectors/files cleaned up in background; chat history is kept).
-5. **Scenarios** — Bind a KB; pick metrics (`recall_at_k` / `mrr` / `faithfulness`); add gold questions and document evidence quotes (char spans, not chunk IDs).
+4. **Knowledge bases** — Create KB, upload docs (text / Office / PDF / images); default `auto` loader extracts text then ingests to pgvector; delete single docs or whole KBs (soft-hide updates the list immediately; vectors/files cleaned in background; chat history is kept).
+5. **Scenarios** — Bind a KB; pick metrics (`recall_at_k` / `mrr` / `faithfulness`); add gold questions and document evidence quotes (char spans).
 6. **Experiments** — Bind a scenario to two or more existing query pipelines; queue **one offline eval job per pipeline** (parallel, with per-pipeline progress); rank by weighted metrics; **promote** the winner as the KB default query pipeline.
 7. **Chat** — Defaults to first KB and first query pipeline; multi-turn Q&A (SSE: `progress` + streamed answer); expand progress for full stage outputs; citations under each assistant reply.
 
-Swap plugins to swap recipes—same UI and storage. Custom `.py` upload remains a later milestone.
+Swap plugins to swap recipes—same UI and storage. Custom plugins: drop a `.py` with `apply` into `RAGLAB_CUSTOM_PLUGIN_DIR`.
 
 ### Tech stack
 

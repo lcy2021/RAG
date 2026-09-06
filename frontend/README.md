@@ -54,9 +54,9 @@ npm test
 
 ## Pages (M1)
 
-`/settings` (credentials: vector or LLM; list shows key hint only), `/plugins`, `/pipelines`, `/kb` are list pages (search; Add where create exists). Create/detail live on nested routes: `/settings/credentials/new`, `/pipelines/new`, `/kb/new`, `/kb/:id`. `/scenarios` list/create/detail: pick KB + evaluator metrics, add gold questions and paste evidence quotes from KB documents. `/experiments` list/create/detail: bind a scenario to explicit variants (optional one-stage plugin override), queue offline eval (poll until done), inspect the variant × metric table, and promote the winner into a new query pipeline / KB default. Chat is a dialog: defaults to the first knowledge base and first query pipeline; history sessions can be deleted from the left rail; while answering, each assistant card shows a scrollable progress block (plugin stage + output) above the answer; after refresh, traces reload from the rag-run sources API.
+`/settings` (credentials: vector or LLM; list shows key hint), `/plugins`, `/pipelines`, `/kb` are list pages (search; Add where create exists). Create/detail live on nested routes: `/settings/credentials/new`, `/pipelines/new`, `/kb/new`, `/kb/:id`. `/scenarios` list/create/detail: pick KB + evaluator metrics, add gold questions and paste evidence quotes from KB documents. `/experiments` list/create/detail: bind a scenario to explicit variants (optional one-stage plugin override), queue offline eval (poll until done), inspect the variant × metric table, and promote the winner into a new query pipeline / KB default. Chat is a dialog: defaults to the first knowledge base and first query pipeline; history sessions can be deleted from the left rail; while answering, each assistant card shows a scrollable progress block (plugin stage + output) above the answer; after refresh, traces reload from the rag-run sources API.
 
-Do not put `api_key` in plugin params; credentials live on the settings page.
+Plugin params use `binding_id`; credentials are managed on the settings page.
 
 ## i18n
 
