@@ -7,7 +7,7 @@
 
 ## 中文
 
-把带 `apply` 的 `.py` 放进 `RAGLAB_CUSTOM_PLUGIN_DIR`，进程启动时 `apply(registry)` 并写入插件目录，出现在流水线/实验下拉框。`lab.yml` 的 `extra_plugins` 用于批量导入示例。
+把带 `apply` 的 `.py` 放进 `RAGLAB_CUSTOM_PLUGIN_DIR`，进程启动时 `apply(registry)` 并写入插件目录，出现在流水线/实验下拉框。
 
 ```python
 from plugins import define_stage
@@ -70,7 +70,7 @@ def apply(registry):
 
 <a id="english"></a>
 
-Drop a `.py` with `apply` into `RAGLAB_CUSTOM_PLUGIN_DIR`. On boot the server calls `apply(registry)` and upserts the catalog; the plugin appears in pipeline/experiment dropdowns. `lab.yml` `extra_plugins` supports bulk import examples.
+Drop a `.py` with `apply` into `RAGLAB_CUSTOM_PLUGIN_DIR`. On boot the server calls `apply(registry)` and upserts the catalog; the plugin appears in pipeline/experiment dropdowns.
 
 Harness analog: `defineTool` + `ctx.tools.register`. Injected services: `ctx.llm`, `ctx.embeddings`, `ctx.trace`.
 

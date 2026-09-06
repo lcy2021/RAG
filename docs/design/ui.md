@@ -7,7 +7,7 @@
 
 ## 中文
 
-实验室的操作面是浏览器。API 给页面使用；`lab.yml` 对应「导入配置」对话框。
+实验室的操作面是浏览器。API 给页面使用；配置在各页面完成并写入数据库。
 
 实现：`frontend/`，Vite + React + TypeScript。选用 **Ant Design**（布局、表格、表单、上传、JSON Schema 槽位）。界面文案用 **i18next**（中/英，顶栏切换，写入 `localStorage`）。开发时 Vite 代理 `/api` → FastAPI（`localhost:6660`）。
 
@@ -56,7 +56,7 @@
 
 <a id="english"></a>
 
-The operator surface is the browser. APIs serve the UI. `lab.yml` maps to an “Import config” dialog.
+The operator surface is the browser. APIs serve the UI. Configuration is done on the pages and persisted in the database.
 
 Implementation: `frontend/` with Vite + React + TypeScript. **Ant Design** covers the lab console (layout, tables, forms, upload, JSON Schema slots). Copy is **i18next**-driven (zh/en, header switch, persisted in `localStorage`). Vite proxies `/api` to FastAPI on port 6660.
 
